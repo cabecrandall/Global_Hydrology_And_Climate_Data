@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-metadata = pd.read_csv('catchmentMetadata.csv')
-old_metadata = pd.read_csv('shortened_travis_metadata.csv')
+metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
+old_metadata = pd.read_csv('archived_results/shortened_travis_metadata.csv')
 # These two metadatas can be compared, and this module will screen them
 # for similarities and differences across timescales.
 precip_directory = "Basin_Precip_TS_for_model"

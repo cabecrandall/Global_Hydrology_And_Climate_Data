@@ -2,7 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 
 # flow_data = pd.read_csv('allDailyFlowData_new.csv')
-metadata = pd.read_csv('catchmentMetadata.csv')
+metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
 flow_data_L_D = pd.read_csv('allDailyFlowInLitersPerDay.csv')
 
 # This was done because of a clerical error on my part. it should not be

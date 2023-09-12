@@ -2,7 +2,7 @@ import pandas as pd
 import os
 from tqdm import tqdm
 directory = 'Basin_Precip_TS_for_model'
-metadata = pd.read_csv('catchmentMetadata.csv')
+metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
 
 
 

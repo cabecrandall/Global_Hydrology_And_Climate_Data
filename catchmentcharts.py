@@ -15,7 +15,7 @@ import os
 
 class charts:
     metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
-    result = pd.read_csv('result.csv')
+    result = pd.read_csv('archived_results/result.csv')
     flows = pd.DataFrame({})
     includeLatitudes = True
 
