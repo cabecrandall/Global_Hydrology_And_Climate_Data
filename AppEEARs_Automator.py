@@ -4,6 +4,8 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.options import BaseOptions
+from selenium.webdriver.support.ui import Select
 
 username = input('Enter Username:')
 password = input('Enter Password:')
@@ -22,5 +24,11 @@ search_box.send_keys(password)
 
 search_box.submit()
 
+time.sleep(6)
+
+
+bruh = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-task > div.card.card-body > div > div > div > div.col.col-lg-4.col-first.mx-auto > div.body > a > img")
+
+bruh.click()
 
 driver.quit()

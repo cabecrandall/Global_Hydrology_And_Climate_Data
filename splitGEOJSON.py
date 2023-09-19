@@ -2,6 +2,7 @@ import geopandas as gpd
 import pandas as pd
 import math
 import os
+from tqdm import tqdm
 
 """
 This file does exactly what the title says. It analyzes and splits up a large GEOJSON into equal parts, all with sizes
@@ -48,10 +49,23 @@ def extract_shapes(inputFile):
             num += 1
 
 
+def total_split(inputFile):
+
+
+    gdf = gpd.read_file(inputFile)
+    gdf = gdf.drop_duplicates(subset='grdc_no')
+    count = gdf.shape[0]
+    loop = tqdm(total=count)
+    for index in range(count):
+        data = gdf[index]
+        ID = str(data["grdc_no"])
+        path = os.path.join('catchment_shapes', f'basin_{ID}_shape.geojson')
+        data = gpd.GeoSeries(data)
+        data.to_file(path, driver='GeoJSON')
 
 def main():
-    extract_shapes('all_flow_basin_shapes.geojson')
-
+    # extract_shapes('all_flow_basin_shapes.geojson')
+    total_split('all_flow_basin_shapes.geojson')
 
 if __name__ == '__main__':
     main()
