@@ -26,9 +26,10 @@ search_box.submit()
 
 time.sleep(6)
 
+box = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-task > div.card.card-body > div > div > div > div.col.col-lg-4.col-first.mx-auto > div.body > a > img")
 
-bruh = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-task > div.card.card-body > div > div > div > div.col.col-lg-4.col-first.mx-auto > div.body > a > img")
+box.click()
 
-bruh.click()
+
 
 driver.quit()
