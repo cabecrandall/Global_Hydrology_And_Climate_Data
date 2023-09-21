@@ -56,12 +56,17 @@ def total_split(inputFile):
     gdf = gdf.drop_duplicates(subset='grdc_no')
     count = gdf.shape[0]
     loop = tqdm(total=count)
+    # This method here is a bit rudimentary, but the point of it is to split every row in the larger
+    # JSON dataframe into sets of one row.
     for index in range(count):
-        data = gdf[index]
-        ID = str(data["grdc_no"])
+        if index == count - 1:
+            data = gdf[index:]
+        else:
+            data = gdf[index:index+1]
+        ID = str(data["grdc_no"].values[0])
         path = os.path.join('catchment_shapes', f'basin_{ID}_shape.geojson')
-        data = gpd.GeoSeries(data)
         data.to_file(path, driver='GeoJSON')
+        loop.update()
 
 def main():
     # extract_shapes('all_flow_basin_shapes.geojson')
