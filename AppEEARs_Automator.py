@@ -15,11 +15,11 @@ from selenium.webdriver.common.keys import Keys
 def extractGeoData(dataset, start_date, end_date):
     # create finish log
 
-    file = open('shape_request_log.txt', 'a+')
-    data = file.read()
-    doneIDs = data.split()
-    # TODO: Do something good here
-    print(doneIDs)
+    file = open('shape_request_log.txt', 'r')
+    finished_shapes = file.readlines()
+    # process data!
+    for i in range(len(finished_shapes)):
+        finished_shapes[i] = finished_shapes[i][:7]
 
     username = input('Enter Username:')
     password = input('Enter Password:')
@@ -68,17 +68,22 @@ def extractGeoData(dataset, start_date, end_date):
 
     # TODO: Make a finished log.txt file
     # TODO: Clear all boxes, or initialize only with best boxes
+    finishlog = open('shape_request_log.txt', 'a+')
     for file in os.listdir('catchment_shapes'):
         ID = file[6:13]
-        box = driver.find_element(By.ID, 'taskName')
-        box.clear()
-        box.send_keys(ID)
-        box = driver.find_element(By.ID, 'shapeFileUpload')
-        path = os.path.join('catchment_shapes', file)
-        box.send_keys(os.path.abspath(path))
-        #submission
-        box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
-        box.click()
+        if ID not in finished_shapes:
+            driver.implicitly_wait(10)
+            box = driver.find_element(By.ID, 'taskName')
+            box.clear()
+            box.send_keys(ID)
+            box = driver.find_element(By.ID, 'shapeFileUpload')
+            path = os.path.join('catchment_shapes', file)
+            box.send_keys(os.path.abspath(path))
+            #submission
+            box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
+            box.click()
+            finishlog.write(f'{ID}\n')
+
 
 
     driver.quit()
