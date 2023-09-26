@@ -69,6 +69,7 @@ def extractGeoData(dataset, start_date, end_date):
     # TODO: Make a finished log.txt file
     # TODO: Clear all boxes, or initialize only with best boxes
     finishlog = open('shape_request_log.txt', 'a+')
+    finishlog.write('\n')
     for file in os.listdir('catchment_shapes'):
         ID = file[6:13]
         if ID not in finished_shapes:
@@ -81,12 +82,22 @@ def extractGeoData(dataset, start_date, end_date):
             box.send_keys(os.path.abspath(path))
             #submission
             box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
+            time.sleep(2)
             box.click()
             finishlog.write(f'{ID}\n')
 
 
 
     driver.quit()
+
+def verifyRequestsReceived():
+    # create finish log
+
+    file = open('shape_request_log.txt', 'r')
+    finished_shapes = file.readlines()
+    # process data!
+    for i in range(len(finished_shapes)):
+        finished_shapes[i] = finished_shapes[i][:7]
 
 
 def main():
