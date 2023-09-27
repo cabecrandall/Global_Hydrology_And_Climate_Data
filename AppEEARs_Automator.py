@@ -9,6 +9,7 @@ import time
 import os
 
 from email import message_from_file
+import emlx
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -102,29 +103,23 @@ def verifyRequestsReceived(rootDirectory):
     for i in range(len(finished_shapes)):
         finished_shapes[i] = finished_shapes[i][:7]
 
-    options = webdriver.ChromeOptions()
-    options.add_argument(r'--user_data_dir=/Users/calebcrandall/Library/Application Support/Google/Chrome')
-    options.add_argument(r'--profile_directory=Profile 1')
-
-    driver = webdriver.Chrome(options=options)
-    driver.get("https://mail.google.com")
-    username = input("Enter Username")
-    password = input("Enter Password")
-    box = driver.find_element(By.ID, "identifierID")
-    box.send_keys(username)
-    box.submit()
-    box = driver.find_element(By.ID, "kill me!")
-
-
-
-    driver.quit()
+    print(os.listdir(rootDirectory))
+    for subdir, dirs, files in os.walk(rootDirectory):
+        for file in files:
+            ending = file[-4:]
+            if ending == "emlx":
+                path = os.path.join(subdir, file)
+                email = emlx.read(path)
+                if "appeears" in email['From']:
+                    print(path)
+# TODO: Set parameters to parse and organize AND download relevant files
 
 
 
 
 def main():
     # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
-    verifyRequestsReceived()
+    verifyRequestsReceived("/Users/calebcrandall/Documents/Gmail/All Mail.mbox/6D75E799-CD81-4BCD-B786-D68CB1D2112D")
 
 
 if __name__ == '__main__':
