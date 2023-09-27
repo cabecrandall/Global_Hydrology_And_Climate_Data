@@ -8,9 +8,12 @@ collection period does not fit between 2001 and 2022. Those parameters can be fo
 import time
 import os
 
+from email import message_from_file
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
 def extractGeoData(dataset, start_date, end_date):
     # create finish log
@@ -90,7 +93,7 @@ def extractGeoData(dataset, start_date, end_date):
 
     driver.quit()
 
-def verifyRequestsReceived():
+def verifyRequestsReceived(rootDirectory):
     # create finish log
 
     file = open('shape_request_log.txt', 'r')
@@ -99,9 +102,29 @@ def verifyRequestsReceived():
     for i in range(len(finished_shapes)):
         finished_shapes[i] = finished_shapes[i][:7]
 
+    options = webdriver.ChromeOptions()
+    options.add_argument(r'--user_data_dir=/Users/calebcrandall/Library/Application Support/Google/Chrome')
+    options.add_argument(r'--profile_directory=Profile 1')
+
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://mail.google.com")
+    username = input("Enter Username")
+    password = input("Enter Password")
+    box = driver.find_element(By.ID, "identifierID")
+    box.send_keys(username)
+    box.submit()
+    box = driver.find_element(By.ID, "kill me!")
+
+
+
+    driver.quit()
+
+
+
 
 def main():
-    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
+    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
+    verifyRequestsReceived()
 
 
 if __name__ == '__main__':
