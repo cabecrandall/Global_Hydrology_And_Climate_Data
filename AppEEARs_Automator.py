@@ -103,7 +103,7 @@ def verifyRequestsReceived(rootDirectory):
     for i in range(len(finished_shapes)):
         finished_shapes[i] = finished_shapes[i][:7]
 
-    print(os.listdir(rootDirectory))
+    completeIDs = []
     for subdir, dirs, files in os.walk(rootDirectory):
         for file in files:
             ending = file[-4:]
@@ -111,7 +111,9 @@ def verifyRequestsReceived(rootDirectory):
                 path = os.path.join(subdir, file)
                 email = emlx.read(path)
                 if "appeears" in email['From']:
-                    print(path)
+                    # If Complete in "subject", add Subject ID to list
+                    print(email)
+
 # TODO: Set parameters to parse and organize AND download relevant files
 
 
