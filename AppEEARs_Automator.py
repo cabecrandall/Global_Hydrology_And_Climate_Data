@@ -7,6 +7,7 @@ collection period does not fit between 2001 and 2022. Those parameters can be fo
 '''
 import time
 import os
+from tqdm import tqdm
 
 from email import message_from_file
 import emlx
@@ -20,6 +21,7 @@ def extractGeoData(dataset, start_date, end_date):
     # create finish log
 
     file = open('shape_request_log.txt', 'r')
+    bug_log = open('appeears_bug_log.txt', 'w')
     finished_shapes = file.readlines()
     # process data!
     for i in range(len(finished_shapes)):
@@ -70,8 +72,12 @@ def extractGeoData(dataset, start_date, end_date):
     time.sleep(0.5)
     box.send_keys(Keys.TAB)
 
-    # TODO: Make a finished log.txt file
-    # TODO: Clear all boxes, or initialize only with best boxes
+    # initialize progress bar
+    size = 0
+    for file in os.listdir('catchment_shapes'):
+        size += 1
+    loop = tqdm(total=size)
+
     finishlog = open('shape_request_log.txt', 'a+')
     finishlog.write('\n')
     for file in os.listdir('catchment_shapes'):
@@ -88,14 +94,29 @@ def extractGeoData(dataset, start_date, end_date):
             box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
             time.sleep(2)
             box.click()
-            finishlog.write(f'{ID}\n')
+            # The catchment request is considered "sent" if the "successful submission" message is output.
+            # If not, the error message is saved to a log.
+            try:
+                driver.implicitly_wait(10)
+                box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
+                message = box.text
+                if "The area sample request was successfully submitted" in message:
+                    finishlog.write(f'{ID}\n')
+                else:
+                    bug_log.write(f'{ID} ERROR: {message}\n')
+            finally:
+                bug_log.write(f'{ID} ERROR: No completion message detected')
+            loop.update(1)
+
 
 
 
     driver.quit()
 
-def verifyRequestsReceived(rootDirectory):
-    # create finish log
+def verifyRequestsReceived(rootDirectory: str):
+    # If you suspect that the web scraping function that forms the heart of this
+    # module skipped some catchment requests, you can pass a folder with AppEEARS
+    # email files on it to see which catchments you actually have download links for!
 
     file = open('shape_request_log.txt', 'r')
     finished_shapes = file.readlines()
@@ -103,6 +124,14 @@ def verifyRequestsReceived(rootDirectory):
     for i in range(len(finished_shapes)):
         finished_shapes[i] = finished_shapes[i][:7]
 
+    # count files
+    file_count = 0
+    for subdir, dirs, files in os.walk(rootDirectory):
+        for file in files:
+            file_count += 1
+
+    print("Processing Email Folder")
+    loop = tqdm(total=file_count)
     completeIDs = []
     for subdir, dirs, files in os.walk(rootDirectory):
         for file in files:
@@ -112,7 +141,25 @@ def verifyRequestsReceived(rootDirectory):
                 email = emlx.read(path)
                 if "appeears" in email['From']:
                     # If Complete in "subject", add Subject ID to list
-                    print(email)
+                    if "Complete" in email['Subject']:
+                        completeIDs.append(email['Subject'][9:16])
+            loop.update()
+
+    # see which finished shapes don't actually have completed requests
+    for ID in finished_shapes:
+        if ID not in completeIDs:
+            finished_shapes.remove(ID)
+
+    file = open('shape_request_log.txt', 'w')
+    for ID in finished_shapes:
+        file.write(ID + '\n')
+
+    # for testing:
+    # print(len(completeIDs))
+    # completeIDs = sorted(completeIDs)
+    # for ID in completeIDs:
+    #     print(ID)
+
 
 # TODO: Set parameters to parse and organize AND download relevant files
 
@@ -120,8 +167,8 @@ def verifyRequestsReceived(rootDirectory):
 
 
 def main():
-    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
-    verifyRequestsReceived("/Users/calebcrandall/Documents/Gmail/All Mail.mbox/6D75E799-CD81-4BCD-B786-D68CB1D2112D")
+    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
+    #verifyRequestsReceived("/Users/calebcrandall/Documents/Gmail/All Mail.mbox/6D75E799-CD81-4BCD-B786-D68CB1D2112D")
 
 
 if __name__ == '__main__':
