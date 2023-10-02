@@ -17,22 +17,30 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
+
 def extractGeoData(dataset, start_date, end_date):
     # create finish log
 
     file = open('shape_request_log.txt', 'r')
-    bug_log = open('appeears_bug_log.txt', 'w')
+    bug_log = open('appeears_bug_log.txt', 'r')
     finished_shapes = file.readlines()
+    bad_shapes = bug_log.readlines()
     # process data!
     for i in range(len(finished_shapes)):
         finished_shapes[i] = finished_shapes[i][:7]
+
+    for i in bad_shapes:
+        if len(i) > 7:
+            ID = i[:7]
+            finished_shapes.append(ID)
 
     username = input('Enter Username:')
     password = input('Enter Password:')
 
     driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
 
-    driver.get('https://urs.earthdata.nasa.gov/oauth/authorize?client_id=ZAQpxSrQNpk342OR77kisA&response_type=code&redirect_uri=https://appeears.earthdatacloud.nasa.gov/login&state=/task/area')
+    driver.get(
+        'https://urs.earthdata.nasa.gov/oauth/authorize?client_id=ZAQpxSrQNpk342OR77kisA&response_type=code&redirect_uri=https://appeears.earthdatacloud.nasa.gov/login&state=/task/area')
 
     search_box = driver.find_element(By.ID, 'username')
 
@@ -46,7 +54,8 @@ def extractGeoData(dataset, start_date, end_date):
 
     driver.implicitly_wait(20)
 
-    box = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-task > div.card.card-body > div > div > div > div.col.col-lg-4.col-first.mx-auto > div.body > a > img")
+    box = driver.find_element(By.CSS_SELECTOR,
+                              "#top > app-root > div > main > app-task > div.card.card-body > div > div > div > div.col.col-lg-4.col-first.mx-auto > div.body > a > img")
 
     box.click()
 
@@ -79,6 +88,7 @@ def extractGeoData(dataset, start_date, end_date):
     loop = tqdm(total=size)
 
     finishlog = open('shape_request_log.txt', 'a+')
+    bug_log = open('appeears_bug_log.txt', 'a+')
     finishlog.write('\n')
     for file in os.listdir('catchment_shapes'):
         ID = file[6:13]
@@ -90,30 +100,31 @@ def extractGeoData(dataset, start_date, end_date):
             box = driver.find_element(By.ID, 'shapeFileUpload')
             path = os.path.join('catchment_shapes', file)
             box.send_keys(os.path.abspath(path))
-            #submission
-            box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
+            # submission
+            box = driver.find_element(By.CSS_SELECTOR,
+                                      '#top > app-root > div > main > app-task > div.card.card-body > form > div:nth-child(4) > div > button.btn.btn-text.btn-primary')
             time.sleep(2)
             box.click()
             # The catchment request is considered "sent" if the "successful submission" message is output.
             # If not, the error message is saved to a log.
             try:
-                driver.implicitly_wait(10)
                 box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
                 message = box.text
+                while len(message) < 1:
+                    box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
+                    message = box.text
                 if "The area sample request was successfully submitted" in message:
                     finishlog.write(f'{ID}\n')
                 else:
                     bug_log.write(f'{ID} ERROR: {message}\n')
-            finally:
-                bug_log.write(f'{ID} ERROR: No completion message detected')
+            except:
+                bug_log.write(f'{ID} ERROR: No completion message detected\n')
             loop.update(1)
-
-
-
 
     driver.quit()
 
-def verifyRequestsReceived(rootDirectory: str):
+
+def verifyRequestsReceived(rootDirectory: str, function="remove"):
     # If you suspect that the web scraping function that forms the heart of this
     # module skipped some catchment requests, you can pass a folder with AppEEARS
     # email files on it to see which catchments you actually have download links for!
@@ -145,14 +156,27 @@ def verifyRequestsReceived(rootDirectory: str):
                         completeIDs.append(email['Subject'][9:16])
             loop.update()
 
-    # see which finished shapes don't actually have completed requests
-    for ID in finished_shapes:
-        if ID not in completeIDs:
-            finished_shapes.remove(ID)
+    if function is "remove":
+        # see which finished shapes don't actually have completed requests
+        for ID in finished_shapes:
+            if ID not in completeIDs:
+                finished_shapes.remove(ID)
 
-    file = open('shape_request_log.txt', 'w')
-    for ID in finished_shapes:
-        file.write(ID + '\n')
+        file = open('shape_request_log.txt', 'w')
+        for ID in finished_shapes:
+            file.write(ID + '\n')
+
+    elif function is "add":
+        for ID in completeIDs:
+            if ID not in finished_shapes:
+                finished_shapes.append(ID)
+
+        file = open('shape_request_log.txt', 'w')
+        for ID in finished_shapes:
+            file.write(ID + '\n')
+
+    else:
+        Exception("Invalid argument!")
 
     # for testing:
     # print(len(completeIDs))
@@ -164,14 +188,12 @@ def verifyRequestsReceived(rootDirectory: str):
 # TODO: Set parameters to parse and organize AND download relevant files
 
 
-
-
 def main():
     extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
-    #verifyRequestsReceived("/Users/calebcrandall/Documents/Gmail/All Mail.mbox/6D75E799-CD81-4BCD-B786-D68CB1D2112D")
+    # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox",
+    #                        function="add")
 
 
 if __name__ == '__main__':
     main()
     exit()
-
