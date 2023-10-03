@@ -85,7 +85,7 @@ def extractGeoData(dataset, start_date, end_date):
     size = 0
     for file in os.listdir('catchment_shapes'):
         size += 1
-    loop = tqdm(total=size)
+    loop = tqdm(total=(size - len(finished_shapes)))
 
     finishlog = open('shape_request_log.txt', 'a+')
     bug_log = open('appeears_bug_log.txt', 'a+')
@@ -110,7 +110,7 @@ def extractGeoData(dataset, start_date, end_date):
             try:
                 box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
                 message = box.text
-                while len(message) < 1:
+                while len(message) < 1 or "too complex" in message:
                     box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
                     message = box.text
                 if "The area sample request was successfully submitted" in message:
