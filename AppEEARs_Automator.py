@@ -156,7 +156,7 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
                         completeIDs.append(email['Subject'][9:16])
             loop.update()
 
-    if function is "remove":
+    if len(finished_shapes) > len(completeIDs):
         # see which finished shapes don't actually have completed requests
         for ID in finished_shapes:
             if ID not in completeIDs:
@@ -166,7 +166,7 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
         for ID in finished_shapes:
             file.write(ID + '\n')
 
-    elif function is "add":
+    else:
         for ID in completeIDs:
             if ID not in finished_shapes:
                 finished_shapes.append(ID)
@@ -175,8 +175,7 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
         for ID in finished_shapes:
             file.write(ID + '\n')
 
-    else:
-        Exception("Invalid argument!")
+
 
     # for testing:
     # print(len(completeIDs))
@@ -190,8 +189,7 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
 
 def main():
     extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
-    # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox",
-    #                        function="add")
+    # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox")
 
 
 if __name__ == '__main__':
