@@ -64,3 +64,44 @@ ore ERROR: The file does not appear to be a supported file format.
 1258500 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
 ×
 
+ore ERROR: The file does not appear to be a supported file format.
+×
+3653110 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+3649950 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+1134030 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+1427500 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+1134730 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6340500 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+4119300 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6730501 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+3649418 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+1134100 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6830510 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+3652350 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6742201 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6742800 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6340501 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+1591002 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+4102050 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+2909150 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+6242401 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
+×
+
