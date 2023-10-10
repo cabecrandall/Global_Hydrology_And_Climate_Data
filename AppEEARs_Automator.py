@@ -124,17 +124,8 @@ def extractGeoData(dataset, start_date, end_date):
     driver.quit()
 
 
-def verifyRequestsReceived(rootDirectory: str, function="remove"):
-    # If you suspect that the web scraping function that forms the heart of this
-    # module skipped some catchment requests, you can pass a folder with AppEEARS
-    # email files on it to see which catchments you actually have download links for!
 
-    file = open('shape_request_log.txt', 'r')
-    finished_shapes = file.readlines()
-    # process data!
-    for i in range(len(finished_shapes)):
-        finished_shapes[i] = finished_shapes[i][:7]
-
+def findAppEEARSCompletedCatchments(rootDirectory: str):
     # count files
     file_count = 0
     for subdir, dirs, files in os.walk(rootDirectory):
@@ -155,6 +146,29 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
                     if "Complete" in email['Subject']:
                         completeIDs.append(email['Subject'][9:16])
             loop.update()
+    return completeIDs
+
+
+def verifyRequestsReceived(rootDirectory: str, function="remove"):
+    # If you suspect that the web scraping function that forms the heart of this
+    # module skipped some catchment requests, you can pass a folder with AppEEARS
+    # email files on it to see which catchments you actually have download links for!
+
+    file = open('shape_request_log.txt', 'r')
+    finished_shapes = file.readlines()
+    # process data!
+    for i in range(len(finished_shapes)):
+        finished_shapes[i] = finished_shapes[i][:7]
+
+    # count files
+    file_count = 0
+    for subdir, dirs, files in os.walk(rootDirectory):
+        for file in files:
+            file_count += 1
+
+    print("Processing Email Folder")
+    loop = tqdm(total=file_count)
+    completeIDs = findAppEEARSCompletedCatchments(rootDirectory)
 
     if len(finished_shapes) > len(completeIDs):
         # see which finished shapes don't actually have completed requests
@@ -186,10 +200,35 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
 
 # TODO: Set parameters to parse and organize AND download relevant files
 
+def downloadCatchmentsFromEmail():
+    username = input('Enter Username:')
+    password = input('Enter Password:')
+
+    driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
+
+    driver.get('https://appeears.earthdatacloud.nasa.gov/explore')
+
+    search_box = driver.find_element(By.ID, 'username')
+    search_box.send_keys(username)
+    search_box = driver.find_element(By.ID, 'password')
+    search_box.send_keys(password)
+    search_box.submit()
+    driver.implicitly_wait(20)
+
+    box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-explore > div.table-responsive > table > thead > tr:nth-child(1) > td > app-pagination-control > div > ul > li:nth-child(30) > a')
+
+    print('yuh')
+
+
+
+
+
+
 
 def main():
     extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
     # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox")
+    # downloadCatchmentsFromEmail()
 
 
 if __name__ == '__main__':
