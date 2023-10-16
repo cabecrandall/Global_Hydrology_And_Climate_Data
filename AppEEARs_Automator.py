@@ -11,11 +11,13 @@ from tqdm import tqdm
 
 from email import message_from_file
 import emlx
+import requests
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
+
+
 
 
 def extractGeoData(dataset, start_date, end_date):
@@ -149,10 +151,12 @@ def findAppEEARSCompletedCatchments(rootDirectory: str):
     return completeIDs
 
 
-def verifyRequestsReceived(rootDirectory: str, function="remove"):
+def verifyRequestsReceived(rootDirectory: str):
+    """
     # If you suspect that the web scraping function that forms the heart of this
     # module skipped some catchment requests, you can pass a folder with AppEEARS
     # email files on it to see which catchments you actually have download links for!
+    """
 
     file = open('shape_request_log.txt', 'r')
     finished_shapes = file.readlines()
@@ -200,9 +204,29 @@ def verifyRequestsReceived(rootDirectory: str, function="remove"):
 
 # TODO: Set parameters to parse and organize AND download relevant files
 
-def downloadCatchmentsFromEmail():
+def #TODO uhhhh
+
+def renameDownloadToID(key_word, ID):
+    """
+    renames a downloaed file to the desired ID. The file must be in a computer root folder named "Downloads".
+    :param key_word: A means of finding the file, either the entire name or a unique substring of the file.
+    :param ID: The desired name for the file.
+    :return:
+    """
+    directory = "/Users/calebcrandall/Downloads"
+    for file in os.listdir(directory):
+        if key_word in file:
+            os.rename(os.path.join(directory, file), os.path.join(directory, f"{ID}.csv"))
+
+
+def downloadCatchmentTimeSeries():
+
+    # TODO: initialize loop, and make usable for other types of catchments
+    # TODO: other features include date checkers, other things of the sort
     username = input('Enter Username:')
     password = input('Enter Password:')
+
+
 
     driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
 
@@ -215,20 +239,35 @@ def downloadCatchmentsFromEmail():
     search_box.submit()
     driver.implicitly_wait(20)
 
-    box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > main > app-explore > div.table-responsive > table > thead > tr:nth-child(1) > td > app-pagination-control > div > ul > li:nth-child(30) > a')
+    page_list_location = driver.find_element(By.CSS_SELECTOR,
+                                             "#top > app-root > div > main > app-explore > div.table-responsive > table > thead")
+    table = driver.find_element(By.CSS_SELECTOR,
+                                "#top > app-root > div > main > app-explore > div.table-responsive > table")
+    links = table.find_elements(By.TAG_NAME, "a")
+    loop = tqdm(total=len(links))
+    fresh_links = driver.find_elements(By.TAG_NAME, "a")
+    for link in range(len(links)):
+        fresh_link = fresh_links[link]
+        if fresh_link.get_attribute("title") == "Download the contents of the request":
+            fresh_link.click()
+            # download file!
+            target = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-download-task > div.row > div > div.panel.panel-default.table-responsive > table > tbody > tr:nth-child(7) > td:nth-child(1) > a")
+            target.click()
+            ID = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
+            renameDownloadToID("MOD16A2GF", ID)
+            driver.back()
+            driver.implicitly_wait(20)
 
-    print('yuh')
-
-
-
-
-
+            # This dummy variable is needed to prove that the page loaded
+            table = driver.find_element(By.CSS_SELECTOR,
+                                        "#top > app-root > div > main > app-explore > div.table-responsive > table")
+            fresh_links = driver.find_elements(By.TAG_NAME, "a")
 
 
 def main():
-    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
+    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
     # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox")
-    # downloadCatchmentsFromEmail()
+    downloadCatchmentTimeSeries()
 
 
 if __name__ == '__main__':
