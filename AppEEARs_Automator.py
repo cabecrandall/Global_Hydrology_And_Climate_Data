@@ -18,8 +18,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 
-
-
 def extractGeoData(dataset, start_date, end_date):
     # create finish log
 
@@ -126,7 +124,6 @@ def extractGeoData(dataset, start_date, end_date):
     driver.quit()
 
 
-
 def findAppEEARSCompletedCatchments(rootDirectory: str):
     # count files
     file_count = 0
@@ -193,8 +190,6 @@ def verifyRequestsReceived(rootDirectory: str):
         for ID in finished_shapes:
             file.write(ID + '\n')
 
-
-
     # for testing:
     # print(len(completeIDs))
     # completeIDs = sorted(completeIDs)
@@ -204,7 +199,14 @@ def verifyRequestsReceived(rootDirectory: str):
 
 # TODO: Set parameters to parse and organize AND download relevant files
 
-def #TODO uhhhh
+def isDownloaded(file_stub):
+    if len(file_stub) > 0:
+        downloads = os.listdir("/Users/calebcrandall/Downloads")
+        for thing in downloads:
+            if file_stub in thing:
+                return True
+        return False
+
 
 def renameDownloadToID(key_word, ID):
     """
@@ -219,14 +221,24 @@ def renameDownloadToID(key_word, ID):
             os.rename(os.path.join(directory, file), os.path.join(directory, f"{ID}.csv"))
 
 
-def downloadCatchmentTimeSeries():
+def findNumberofPages(driver):
+    page_count = 0
+    page_list_location = driver.find_element(By.CSS_SELECTOR,
+                                             "#top > app-root > div > main > app-explore > div.table-responsive > table > thead")
+    for element in page_list_location:
+        if element.text.isnumeric():
+            page_count += 1
+    return page_count
+    # TODO: probably broken
 
+
+def downloadCatchmentTimeSeries():
     # TODO: initialize loop, and make usable for other types of catchments
     # TODO: other features include date checkers, other things of the sort
+    skip = False
+
     username = input('Enter Username:')
     password = input('Enter Password:')
-
-
 
     driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
 
@@ -239,21 +251,30 @@ def downloadCatchmentTimeSeries():
     search_box.submit()
     driver.implicitly_wait(20)
 
-    page_list_location = driver.find_element(By.CSS_SELECTOR,
-                                             "#top > app-root > div > main > app-explore > div.table-responsive > table > thead")
     table = driver.find_element(By.CSS_SELECTOR,
                                 "#top > app-root > div > main > app-explore > div.table-responsive > table")
     links = table.find_elements(By.TAG_NAME, "a")
     loop = tqdm(total=len(links))
     fresh_links = driver.find_elements(By.TAG_NAME, "a")
+
     for link in range(len(links)):
         fresh_link = fresh_links[link]
-        if fresh_link.get_attribute("title") == "Download the contents of the request":
+        # resets fresh_links to eliminate staleness
+        fresh_links = analyze_link(driver, fresh_link, fresh_links, skip)
+
+
+def analyze_link(driver, fresh_link, fresh_links, skip):
+    if isDownloaded(fresh_link.text):
+        skip = True
+    if fresh_link.get_attribute("title") == "Download the contents of the request":
+        if not skip:
             fresh_link.click()
             # download file!
-            target = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-download-task > div.row > div > div.panel.panel-default.table-responsive > table > tbody > tr:nth-child(7) > td:nth-child(1) > a")
+            target = driver.find_element(By.CSS_SELECTOR,
+                                         "#top > app-root > div > main > app-download-task > div.row > div > div.panel.panel-default.table-responsive > table > tbody > tr:nth-child(7) > td:nth-child(1) > a")
             target.click()
-            ID = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
+            ID = driver.find_element(By.CSS_SELECTOR,
+                                     "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
             renameDownloadToID("MOD16A2GF", ID)
             driver.back()
             driver.implicitly_wait(20)
@@ -262,6 +283,7 @@ def downloadCatchmentTimeSeries():
             table = driver.find_element(By.CSS_SELECTOR,
                                         "#top > app-root > div > main > app-explore > div.table-responsive > table")
             fresh_links = driver.find_elements(By.TAG_NAME, "a")
+    return fresh_links
 
 
 def main():
