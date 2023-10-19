@@ -225,16 +225,15 @@ def findNumberofPages(driver):
     page_count = 0
     page_list_location = driver.find_element(By.CSS_SELECTOR,
                                              "#top > app-root > div > main > app-explore > div.table-responsive > table > thead")
-    for element in page_list_location:
+    for element in page_list_location.find_elements(By.TAG_NAME, "a"):
         if element.text.isnumeric():
             page_count += 1
     return page_count
-    # TODO: probably broken
+
 
 
 def downloadCatchmentTimeSeries():
-    # TODO: initialize loop, and make usable for other types of catchments
-    # TODO: other features include date checkers, other things of the sort
+    # tODO: Make the loop "while new files are not found in the page iteration" and see what happens
     skip = False
 
     username = input('Enter Username:')
@@ -251,16 +250,28 @@ def downloadCatchmentTimeSeries():
     search_box.submit()
     driver.implicitly_wait(20)
 
+    num_pages = findNumberofPages(driver)
     table = driver.find_element(By.CSS_SELECTOR,
                                 "#top > app-root > div > main > app-explore > div.table-responsive > table")
     links = table.find_elements(By.TAG_NAME, "a")
     loop = tqdm(total=len(links))
     fresh_links = driver.find_elements(By.TAG_NAME, "a")
+    for page in range(num_pages - 1):
+        page_to_find = page + 2
+        for link in range(len(links)):
+            fresh_link = fresh_links[link]
+            # resets fresh_links to eliminate staleness
+            fresh_links = analyze_link(driver, fresh_link, fresh_links, skip)
+            loop.update(1)
+        for link in range(len(links)):
+            fresh_link = fresh_links[link]
+            if fresh_link.text == str(page_to_find):
+                box = driver.find_element(fresh_link)
+                box.click()
 
-    for link in range(len(links)):
-        fresh_link = fresh_links[link]
-        # resets fresh_links to eliminate staleness
-        fresh_links = analyze_link(driver, fresh_link, fresh_links, skip)
+
+
+
 
 
 def analyze_link(driver, fresh_link, fresh_links, skip):
