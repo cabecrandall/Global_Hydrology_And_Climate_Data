@@ -16,6 +16,7 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 
 
 def extractGeoData(dataset, start_date, end_date):
@@ -243,6 +244,7 @@ def downloadCatchmentTimeSeries():
 
     driver.get('https://appeears.earthdatacloud.nasa.gov/explore')
 
+    driver.implicitly_wait(20)
     search_box = driver.find_element(By.ID, 'username')
     search_box.send_keys(username)
     search_box = driver.find_element(By.ID, 'password')
@@ -251,32 +253,54 @@ def downloadCatchmentTimeSeries():
     driver.implicitly_wait(20)
 
     num_pages = findNumberofPages(driver)
-    table = driver.find_element(By.CSS_SELECTOR,
-                                "#top > app-root > div > main > app-explore > div.table-responsive > table")
-    links = table.find_elements(By.TAG_NAME, "a")
-    loop = tqdm(total=len(links))
-    fresh_links = driver.find_elements(By.TAG_NAME, "a")
+
     for page in range(num_pages - 1):
+        print(f"Page {page + 1} starting...")
+        table = driver.find_element(By.CSS_SELECTOR,
+                                    "#top > app-root > div > main > app-explore > div.table-responsive > table")
+        links = table.find_elements(By.TAG_NAME, "a")
+
+        fresh_links = driver.find_elements(By.TAG_NAME, "a")
         page_to_find = page + 2
+        # loop = tqdm(total=len(links))
         for link in range(len(links)):
             fresh_link = fresh_links[link]
             # resets fresh_links to eliminate staleness
-            fresh_links = analyze_link(driver, fresh_link, fresh_links, skip)
-            loop.update(1)
-        for link in range(len(links)):
+            try:
+                fresh_links, skip = analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_find)
+            except:
+                print("Exception: " )
+                fresh_links = driver.find_elements(By.TAG_NAME, "a")
+                fresh_link = fresh_links[link]
+                fresh_links, skip = analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_find)
+            # loop.update(1)
+        go_to_page(driver, links, page_to_find)
+        print(f"page {page + 1} finished!")
+
+
+def go_to_page(driver, links, page_to_find):
+    fresh_links = driver.find_elements(By.TAG_NAME, "a")
+    for link in range(len(fresh_links)):
+        fresh_link = fresh_links[link]
+        try:
+            link_text = fresh_link.text
+        except:
+            print("Stale Element Exception")
+            fresh_links = driver.find_elements(By.TAG_NAME, "a")
             fresh_link = fresh_links[link]
-            if fresh_link.text == str(page_to_find):
-                box = driver.find_element(fresh_link)
-                box.click()
+            link_text = fresh_link.text
+
+        if link_text == str(page_to_find):
+            box = driver.find_element(By.LINK_TEXT, fresh_link.text)
+            actions = ActionChains(driver)
+            actions.move_to_element(box).click().perform()
+            break
 
 
-
-
-
-
-def analyze_link(driver, fresh_link, fresh_links, skip):
-    if isDownloaded(fresh_link.text):
-        skip = True
+def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_find):
+    if not skip:
+        if isDownloaded(fresh_link.text):
+            skip = True
     if fresh_link.get_attribute("title") == "Download the contents of the request":
         if not skip:
             fresh_link.click()
@@ -288,13 +312,20 @@ def analyze_link(driver, fresh_link, fresh_links, skip):
                                      "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
             renameDownloadToID("MOD16A2GF", ID)
             driver.back()
+            # This dummy variable (below) is needed to prove that the page loaded
             driver.implicitly_wait(20)
+            table = driver.find_element(By.CSS_SELECTOR,
+                                        "#top > app-root > div > main > app-explore > div.table-responsive > table")
+            if page > 0:
+                go_to_page(driver, links, page_to_find - 1)
+                driver.implicitly_wait(20)
 
             # This dummy variable is needed to prove that the page loaded
             table = driver.find_element(By.CSS_SELECTOR,
                                         "#top > app-root > div > main > app-explore > div.table-responsive > table")
             fresh_links = driver.find_elements(By.TAG_NAME, "a")
-    return fresh_links
+        skip = False
+    return fresh_links, skip
 
 
 def main():
