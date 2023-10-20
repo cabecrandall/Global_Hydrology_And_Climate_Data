@@ -19,7 +19,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 
-def extractGeoData(dataset, start_date, end_date):
+def extractGeoData(dataset, start_date, end_date, directory):
     # create finish log
 
     file = open('shape_request_log.txt', 'r')
@@ -84,14 +84,14 @@ def extractGeoData(dataset, start_date, end_date):
 
     # initialize progress bar
     size = 0
-    for file in os.listdir('catchment_shapes'):
+    for file in os.listdir(directory):
         size += 1
     loop = tqdm(total=(size - len(finished_shapes)))
 
     finishlog = open('shape_request_log.txt', 'a+')
     bug_log = open('appeears_bug_log.txt', 'a+')
     finishlog.write('\n')
-    for file in os.listdir('catchment_shapes'):
+    for file in os.listdir(directory):
         ID = file[6:13]
         if ID not in finished_shapes:
             driver.implicitly_wait(10)
@@ -116,6 +116,9 @@ def extractGeoData(dataset, start_date, end_date):
                     message = box.text
                 if "The area sample request was successfully submitted" in message:
                     finishlog.write(f'{ID}\n')
+                elif "tomorrow" in message:
+                    print("You reached the limit for daily requests!")
+                    exit(0)
                 else:
                     bug_log.write(f'{ID} ERROR: {message}\n')
             except:
@@ -329,9 +332,9 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 
 
 def main():
-    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22')
+    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
     # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox")
-    downloadCatchmentTimeSeries()
+    # downloadCatchmentTimeSeries()
 
 
 if __name__ == '__main__':
