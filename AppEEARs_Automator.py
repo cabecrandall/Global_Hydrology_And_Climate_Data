@@ -92,14 +92,14 @@ def extractGeoData(dataset, start_date, end_date, directory):
     bug_log = open('appeears_bug_log.txt', 'a+')
     finishlog.write('\n')
     for file in os.listdir(directory):
-        ID = file[6:13]
+        ID = longest_numeric_substring(file)
         if ID not in finished_shapes:
             driver.implicitly_wait(10)
             box = driver.find_element(By.ID, 'taskName')
             box.clear()
             box.send_keys(ID)
             box = driver.find_element(By.ID, 'shapeFileUpload')
-            path = os.path.join('catchment_shapes', file)
+            path = os.path.join(directory, file)
             box.send_keys(os.path.abspath(path))
             # submission
             box = driver.find_element(By.CSS_SELECTOR,
@@ -126,6 +126,24 @@ def extractGeoData(dataset, start_date, end_date, directory):
             loop.update(1)
 
     driver.quit()
+
+def longest_numeric_substring(input_string):
+    current_numeric = ""
+    longest_numeric = ""
+
+    for char in input_string:
+        if char.isnumeric():
+            current_numeric += char
+        else:
+            if len(current_numeric) > len(longest_numeric):
+                longest_numeric = current_numeric
+            current_numeric = ""
+
+    # Check if the last numeric substring is the longest
+    if len(current_numeric) > len(longest_numeric):
+        longest_numeric = current_numeric
+
+    return longest_numeric
 
 
 def findAppEEARSCompletedCatchments(rootDirectory: str):
