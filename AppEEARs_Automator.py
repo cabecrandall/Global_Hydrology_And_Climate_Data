@@ -32,7 +32,7 @@ def extractGeoData(dataset, start_date, end_date, directory):
 
     for i in bad_shapes:
         if len(i) > 7:
-            ID = i[:7]
+            ID = longest_numeric_substring(i)
             finished_shapes.append(ID)
 
     username = input('Enter Username:')

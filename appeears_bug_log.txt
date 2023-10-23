@@ -134,3 +134,8 @@ ore ERROR: The file does not appear to be a supported file format.
 6242501 ERROR: One or more features has an invalid polygon. Please correct the vector polygon file and submit the request again.
 ×
 
+12065500 ERROR: ValueError('Geometry must be in a geographic projection')
+×
+05359500 ERROR: ValueError('Geometry must be in a geographic projection')
+×
+06911000 ERROR: No completion message detected
