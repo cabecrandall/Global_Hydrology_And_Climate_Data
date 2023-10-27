@@ -26,8 +26,8 @@ def data_is_present(frame):
         return True
 
 def column_adder(frame):
-    if frame.shape[1] != 5:
-        dataDict = {"average temperature (C)": [], "precipitation": [], "ET [kg/m^2/8day]": []}
+    if frame.shape[1] != 6:
+        dataDict = {"average temperature (C)": [], "precipitation": [], "ET [kg/m^2/8day]": [], "PET [kg/m^2/8day]": []}
         extension = pd.DataFrame(dataDict)
         result = pd.concat([frame, extension], ignore_index=True)
         return result
@@ -72,7 +72,8 @@ def processDates(frame, column):
 def combineCatchmentData(frame, column):
     tempFrame = combiner(frame, column, 'Temp')
     twoThirdsFrame = combiner(tempFrame, column, 'Precip')
-    finishedFrame = combiner(twoThirdsFrame, column, 'ET')
+    almostFinishedFrame = combiner(twoThirdsFrame, column, 'ET')
+    finishedFrame = combiner(almostFinishedFrame, column, 'PET')
     finishedFrame = finishedFrame.rename(columns={'Daily Average LST [C]' : 'average temperature (C)'})
     # if data_is_present:
         # writeToCSV(finishedFrame, column)
@@ -108,7 +109,6 @@ def createCatchmentfile(column, frame):
     viableRows = finalFrame.notna().all(axis=1)
     #print(finalFrame[viableRows])
     finalFrame = finalFrame[viableRows]
-    finalFrame = processDates(finalFrame, column)
     # ^^^ done before adding other columns, because only flow data needs correcting in theory
     return combineCatchmentData(finalFrame, column)
 
