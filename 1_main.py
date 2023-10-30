@@ -1,18 +1,18 @@
 import pandas as pd
 import indexcatchments
-import catchmentcharts
+# import catchmentcharts
 import Metadata_Transform
 import matchcatchments as matcher
 
 # quick class instance setup
 i = indexcatchments.indexcatchments()
-chart = catchmentcharts.charts
+# chart = catchmentcharts.charts
 
 def makeFlowSeries():
     import Flow_Series_Maker
     Flow_Series_Maker.main()
 
-def compile(make_flow_series=True, generate_charts=False,):
+def main(make_flow_series=False, generate_charts=False):
     """
     The following files are required to run the extraction and compilation of catchment data:
         NOTE: The following files should have catchment IDs,
@@ -34,6 +34,8 @@ def compile(make_flow_series=True, generate_charts=False,):
     if make_flow_series:
         import Flow_Series_Maker
         Flow_Series_Maker.main()
+    flow = pd.read_csv("allDailyFlowData.csv")
+    matcher.matchCatchments(flow)
 
 
 
@@ -62,5 +64,5 @@ def compile(make_flow_series=True, generate_charts=False,):
     #maybe break it into years, do a separate row
 
 
-if __name__ == "__compile__":
-    compile()
+if __name__ == "__main__":
+    main()

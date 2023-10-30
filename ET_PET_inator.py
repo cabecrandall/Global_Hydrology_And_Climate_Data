@@ -29,7 +29,8 @@ def convert_8day_to_daily(folder, destination):
             # This is done by grouping by the index
             # and dividing the groups by the length of the group
             frame = frame.groupby(['week_number']).transform(lambda x: x / len(x))
-            frame = frame.drop(columns=['week_number'])
+            frame = frame[['Mean']]
+            frame = frame.rename(columns={'Mean': 'ET [kg/m^2/day]'})
             frame = frame.reset_index()
             frame.to_csv(os.path.join(destination, file), index=False)
         loop.update(1)

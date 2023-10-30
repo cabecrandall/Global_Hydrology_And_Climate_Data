@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import catchment as c
 
 global metadata
-metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
+# metadata = pd.read_csv('archived_results/catchmentMetadata.csv')
 global noLocations
 # "keeperCats" is the array where all catchment ID's are stored
 # Unit testing may be done here by placing desired catchment ID's in the list
@@ -83,10 +83,7 @@ def combineCatchmentData(frame, column):
 def combiner(frame, column, type):
     try:
         tempFolder = "Basin_" + type + "_TS_for_model"
-        if type != 'ET':
-            file = "basin_" + str(column) + ".csv"
-        else:
-            file = "ET_basin_" + str(column) + ".csv"
+        file = "ET_basin_" + str(column) + ".csv"
         path = os.path.join(tempFolder, file)
         tempFrame = pd.read_csv(path)
         frame['Date'] = pd.to_datetime(frame['Date'])
@@ -98,14 +95,14 @@ def combiner(frame, column, type):
 
 
 def writeToCSV(frame, column):
-    path = '/Users/calebcrandall/Documents/idealabs/hydrology/TestSeries/'
+    path = '/Users/calebcrandall/Documents/idealabs/hydrology/FinalSeries/'
     file = "basin_" + str(column) + ".csv"
     frame.to_csv(os.path.join(path, file), index=False)
 
 def createCatchmentfile(column, frame):
-    newFrame = frame[['date', column]]
+    newFrame = frame[['Date', column]]
     finalFrame = newFrame.rename(columns={column : 'flow'})
-    finalFrame = finalFrame.rename(columns={'date' : 'Date'})
+    finalFrame = finalFrame.rename(columns={'Date' : 'Date'})
     viableRows = finalFrame.notna().all(axis=1)
     #print(finalFrame[viableRows])
     finalFrame = finalFrame[viableRows]
