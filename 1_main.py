@@ -16,7 +16,7 @@ def main(make_flow_series=False, generate_charts=False):
     """
     The following files are required to run the extraction and compilation of catchment data:
         NOTE: The following files should have catchment IDs,
-     - A directory with GRDC catchment flow downloads (raw)
+     - A directory with GRDC catchment flow downloads (raw) OR a .csv file with all desired GRDC catchment time series.
      - A directory with average daily Temperature time series (Celsius) for catchments that match GRDC data (if the match isn't perfect, it will
         not affect the outcome of the compilation beyond data gaps for that catchment). Please name this directory Basin_Temp_TS_for_model.
      - A directory with average daily Precipitation time series (mm) for a series of catchemnts. See temperature instructions above. Please

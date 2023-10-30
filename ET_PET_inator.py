@@ -36,9 +36,19 @@ def convert_8day_to_daily(folder, destination):
         loop.update(1)
 
 
+def rename_ET_to_PET(folder):
+    loop = tqdm(total=len(os.listdir(folder)), position=0, leave=False)
+    for file in os.listdir(folder):
+        if file.endswith(".csv"):
+            path = os.path.join(folder, file)
+            frame = pd.read_csv(path)
+            frame = frame.rename(columns={'ET [kg/m^2/day]': 'PET [kg/m^2/day]'})
+            frame.to_csv(path, index=False)
+        loop.update(1)
 def main():
-    convert_8day_to_daily("Basin_ET_TS", "Basin_ET_TS_for_model")
-    convert_8day_to_daily("Basin_PET_TS", "Basin_PET_TS_for_model")
+    # convert_8day_to_daily("Basin_ET_TS", "Basin_ET_TS_for_model")
+    # convert_8day_to_daily("Basin_PET_TS", "Basin_PET_TS_for_model")
+    rename_ET_to_PET("Basin_PET_TS_for_model")
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ def toLitersPerDay(directory, destination):
     for file in os.listdir(directory):
         if file.endswith(".csv"):
             ID = file[-11:-4]
-            catchment_area = metadata.loc[metadata['Catchment ID'] == ID, 'Catchment Area'].value
+            catchment_area = metadata.loc[metadata['Catchment ID'] == ID, 'Catchment Area'].values[0]
             path = os.path.join(directory, file)
             frame = pd.read_csv(path)
             frame['Date'] = pd.to_datetime(frame['Date'])
@@ -34,6 +34,7 @@ def toLitersPerDay(directory, destination):
 
             frame.to_csv(os.path.join(destination, file), index=True)
 
+
         loop.update(1)
 
 
@@ -42,7 +43,7 @@ def toLitersPerDayPerSqKm(directory, destination):
     for file in os.listdir(directory):
         if file.endswith(".csv"):
             ID = file[-11:-4]
-            catchment_area = metadata.loc[metadata['Catchment ID'] == ID, 'Catchment Area'].value
+            catchment_area = metadata.loc[metadata['Catchment ID'] == ID, 'Catchment Area'].values[0]
             path = os.path.join(directory, file)
             frame = pd.read_csv(path)
             frame['Date'] = pd.to_datetime(frame['Date'])
@@ -63,5 +64,15 @@ def toLitersPerDayPerSqKm(directory, destination):
             frame.to_csv(os.path.join(destination, file), index=True)
 
         loop.update(1)
+
+def main():
+    print(metadata['Catchment Area'])
+    print(metadata['Catchment ID'])
+    toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
+    toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
+
+if __name__ == '__main__':
+    main()
+    exit(0)
 
 

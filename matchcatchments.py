@@ -25,13 +25,14 @@ def data_is_present(frame):
     if frame.shape[1] == 5:
         return True
 
-def column_adder(frame):
+def column_adder(frame, column):
     if frame.shape[1] != 6:
         dataDict = {"average temperature (C)": [], "precipitation": [], "ET [kg/m^2/8day]": [], "PET [kg/m^2/8day]": []}
         extension = pd.DataFrame(dataDict)
         result = pd.concat([frame, extension], ignore_index=True)
         return result
     else:
+        writeToCSV(frame, column, "UniqueFinalSeries")
         return frame
 
     # This bad boy has the same decision parameters as data_is_present, but it
@@ -83,7 +84,7 @@ def combineCatchmentData(frame, column):
 def combiner(frame, column, type):
     try:
         tempFolder = "Basin_" + type + "_TS_for_model"
-        file = "ET_basin_" + str(column) + ".csv"
+        file = "basin_" + str(column) + ".csv"
         path = os.path.join(tempFolder, file)
         tempFrame = pd.read_csv(path)
         frame['Date'] = pd.to_datetime(frame['Date'])
@@ -94,15 +95,14 @@ def combiner(frame, column, type):
         return frame
 
 
-def writeToCSV(frame, column):
-    path = '/Users/calebcrandall/Documents/idealabs/hydrology/FinalSeries/'
+def writeToCSV(frame, column, path='/Users/calebcrandall/Documents/idealabs/hydrology/FinalSeries/'):
     file = "basin_" + str(column) + ".csv"
     frame.to_csv(os.path.join(path, file), index=False)
 
 def createCatchmentfile(column, frame):
-    newFrame = frame[['Date', column]]
+    newFrame = frame[['date', column]]
     finalFrame = newFrame.rename(columns={column : 'flow'})
-    finalFrame = finalFrame.rename(columns={'Date' : 'Date'})
+    finalFrame = finalFrame.rename(columns={'date' : 'Date'})
     viableRows = finalFrame.notna().all(axis=1)
     #print(finalFrame[viableRows])
     finalFrame = finalFrame[viableRows]
@@ -134,12 +134,14 @@ def matchCatchments(frame):
         susFrame = createCatchmentfile(column, frame)
         #if data_is_present(susFrame):
         # The above line is an optional measure, to make the correlation sheet look more refined :)
-        csvFrame = column_adder(susFrame)
+        csvFrame = column_adder(susFrame, column)
         writeToCSV(csvFrame, column)
-        catch = c.catchment(column, csvFrame)
-        x = indexcatchments.indexcatchments()
-        x.indexCatchment(catch)
+        # These classes need to be fixed for PET.
+        # catch = c.catchment(column, csvFrame)
+        # x = indexcatchments.indexcatchments()
+        # x.indexCatchment(catch)
         loop.update(1)
+
 
 
     #combineFlowAndTempData()
