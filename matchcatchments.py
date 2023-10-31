@@ -32,7 +32,7 @@ def column_adder(frame, column):
         result = pd.concat([frame, extension], ignore_index=True)
         return result
     else:
-        writeToCSV(frame, column, "UniqueFinalSeries")
+        writeToCSV(frame, column, "FilledFinalSeries")
         return frame
 
     # This bad boy has the same decision parameters as data_is_present, but it
@@ -100,9 +100,9 @@ def writeToCSV(frame, column, path='/Users/calebcrandall/Documents/idealabs/hydr
     frame.to_csv(os.path.join(path, file), index=False)
 
 def createCatchmentfile(column, frame):
-    newFrame = frame[['date', column]]
+    newFrame = frame[['Date', column]]
     finalFrame = newFrame.rename(columns={column : 'flow'})
-    finalFrame = finalFrame.rename(columns={'date' : 'Date'})
+    finalFrame = finalFrame.rename(columns={'Date' : 'Date'})
     viableRows = finalFrame.notna().all(axis=1)
     #print(finalFrame[viableRows])
     finalFrame = finalFrame[viableRows]
@@ -135,7 +135,8 @@ def matchCatchments(frame):
         #if data_is_present(susFrame):
         # The above line is an optional measure, to make the correlation sheet look more refined :)
         csvFrame = column_adder(susFrame, column)
-        writeToCSV(csvFrame, column)
+        # DO NOT FORGET TO UNCOMMENT THIS LINE BELOW FOR LATER!
+        # writeToCSV(csvFrame, column)
         # These classes need to be fixed for PET.
         # catch = c.catchment(column, csvFrame)
         # x = indexcatchments.indexcatchments()

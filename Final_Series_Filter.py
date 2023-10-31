@@ -16,7 +16,10 @@ def filter_final_series(folder, destination):
             path = os.path.join(folder, file)
             frame = pd.read_csv(path)
             frame = frame.dropna()
-            frame.to_csv(os.path.join(destination, file), index=False)
+            if len(frame) > 0:
+                frame.to_csv(os.path.join(destination, file), index=False)
+            else:
+                print("No data for file: " + file)
         loop.update(1)
 
 

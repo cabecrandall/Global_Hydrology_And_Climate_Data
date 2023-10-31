@@ -13,7 +13,7 @@ def toLitersPerDay(directory, destination):
         if file.endswith(".csv"):
             ID = file[-11:-4]
             catchment_area = metadata.loc[metadata['Catchment ID'] == int(ID), 'Catchment Area'].values
-            if len(catchment_area) == 0:
+            if len(catchment_area) == 0 or not catchment_area[0] > 0:
                 print("No catchment area found for ID: " + ID)
                 continue
             else:
@@ -51,7 +51,7 @@ def toLitersPerDayPerSqKm(directory, destination):
         if file.endswith(".csv"):
             ID = file[-11:-4]
             catchment_area = metadata.loc[metadata['Catchment ID'] == int(ID), 'Catchment Area'].values
-            if len(catchment_area) == 0:
+            if len(catchment_area) == 0 or not catchment_area[0] > 0:
                 print("No catchment area found for ID: " + ID)
                 continue
             else:
@@ -78,8 +78,8 @@ def toLitersPerDayPerSqKm(directory, destination):
         loop.update(1)
 
 def main():
-    # toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
-    toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
+    toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
+    # toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
 
 
 if __name__ == '__main__':

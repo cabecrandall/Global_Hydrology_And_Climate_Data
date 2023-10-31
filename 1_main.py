@@ -34,7 +34,7 @@ def main(make_flow_series=False, generate_charts=False):
     if make_flow_series:
         import Flow_Series_Maker
         Flow_Series_Maker.main()
-    flow = pd.read_csv("allDailyFlowData.csv")
+    flow = pd.read_csv("allDailyFlowData_newflow.csv")
     matcher.matchCatchments(flow)
 
 
