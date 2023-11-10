@@ -23,9 +23,17 @@ global exception_counter
 
 def extractGeoData(dataset, start_date, end_date, directory):
     # create finish log
-
+    if not os.path.exists('shape_request_log.txt'):
+        file = open('shape_request_log.txt', 'w+')
+        file.close()
     file = open('shape_request_log.txt', 'r')
+
+    # create bug log
+    if not os.path.exists('appeears_bug_log.txt'):
+        bugfile = open('appeears_bug_log.txt', 'w+')
+        bugfile.close()
     bug_log = open('appeears_bug_log.txt', 'r')
+
     finished_shapes = file.readlines()
     bad_shapes = bug_log.readlines()
     # process data!
@@ -114,19 +122,23 @@ def extractGeoData(dataset, start_date, end_date, directory):
                 box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
                 message = box.text
                 while len(message) < 1 or "too complex" in message:
+                    time.sleep(0.25)   # wait for error message to appear
                     box = driver.find_element(By.CSS_SELECTOR, '#top > app-root > div > app-alert > p > ngb-alert')
                     message = box.text
                 if "The area sample request was successfully submitted" in message:
                     finishlog.write(f'{ID}\n')
                 elif "tomorrow" in message:
                     print("You reached the limit for daily requests!")
-                    exit(0)
+                    driver.quit()
                 else:
                     bug_log.write(f'{ID} ERROR: {message}\n')
             except:
                 bug_log.write(f'{ID} ERROR: No completion message detected\n')
             loop.update(1)
 
+
+    finishlog.close()
+    bug_log.close()
     driver.quit()
 
 def longest_numeric_substring(input_string):
@@ -148,79 +160,52 @@ def longest_numeric_substring(input_string):
     return longest_numeric
 
 
-def findAppEEARSCompletedCatchments(rootDirectory: str):
-    # count files
-    file_count = 0
-    for subdir, dirs, files in os.walk(rootDirectory):
-        for file in files:
-            file_count += 1
-
-    print("Processing Email Folder")
-    loop = tqdm(total=file_count)
-    completeIDs = []
-    for subdir, dirs, files in os.walk(rootDirectory):
-        for file in files:
-            ending = file[-4:]
-            if ending == "emlx":
-                path = os.path.join(subdir, file)
-                email = emlx.read(path)
-                if "appeears" in email['From']:
-                    # If Complete in "subject", add Subject ID to list
-                    if "Complete" in email['Subject']:
-                        completeIDs.append(email['Subject'][9:16])
-            loop.update()
-    return completeIDs
-
-
-def verifyRequestsReceived(rootDirectory: str):
+def verifyRequestsReceived(page_to_break = 6):
     """
-    # If you suspect that the web scraping function that forms the heart of this
-    # module skipped some catchment requests, you can pass a folder with AppEEARS
-    # email files on it to see which catchments you actually have download links for!
+    This function checks the "Explore" tab of AppEEARS to see if all requests have been received.
+    :return:
     """
+    username = input('Enter Username:')
+    password = input('Enter Password:')
 
-    file = open('shape_request_log.txt', 'r')
-    finished_shapes = file.readlines()
-    # process data!
-    for i in range(len(finished_shapes)):
-        finished_shapes[i] = finished_shapes[i][:7]
+    driver = webdriver.Chrome()  # Optional argument, if not specified will search path.
 
-    # count files
-    file_count = 0
-    for subdir, dirs, files in os.walk(rootDirectory):
-        for file in files:
-            file_count += 1
+    driver.get('https://appeears.earthdatacloud.nasa.gov/explore')
 
-    print("Processing Email Folder")
-    loop = tqdm(total=file_count)
-    completeIDs = findAppEEARSCompletedCatchments(rootDirectory)
+    driver.implicitly_wait(20)
+    search_box = driver.find_element(By.ID, 'username')
+    search_box.send_keys(username)
+    search_box = driver.find_element(By.ID, 'password')
+    search_box.send_keys(password)
+    search_box.submit()
+    driver.implicitly_wait(20)
+    num_pages = findNumberofPages(driver)
 
-    if len(finished_shapes) > len(completeIDs):
-        # see which finished shapes don't actually have completed requests
-        for ID in finished_shapes:
-            if ID not in completeIDs:
-                finished_shapes.remove(ID)
+    requested_IDs = []
 
-        file = open('shape_request_log.txt', 'w')
-        for ID in finished_shapes:
-            file.write(ID + '\n')
+    for page in range(num_pages):
+        print(f"Page {page + 1} starting...")
+        table = driver.find_element(By.CSS_SELECTOR,
+                                    "#top > app-root > div > main > app-explore > div.table-responsive > table")
+        links = table.find_elements(By.TAG_NAME, "td")
 
-    else:
-        for ID in completeIDs:
-            if ID not in finished_shapes:
-                finished_shapes.append(ID)
-
-        file = open('shape_request_log.txt', 'w')
-        for ID in finished_shapes:
-            file.write(ID + '\n')
-
-    # for testing:
-    # print(len(completeIDs))
-    # completeIDs = sorted(completeIDs)
-    # for ID in completeIDs:
-    #     print(ID)
-
-
+        fresh_links = driver.find_elements(By.TAG_NAME, "td")
+        page_to_find = page + 2
+        if page_to_find == page_to_break + 2:
+            break
+        # loop = tqdm(total=len(links))
+        for link in range(len(links)):
+            table_cells = driver.find_elements(By.TAG_NAME, "td")
+            cell = fresh_links[link]
+            # resets fresh_links to eliminate staleness
+            if len(cell.text) > 6 and cell.text.isnumeric():
+                if cell.text not in requested_IDs:
+                    requested_IDs.append(cell.text)
+        go_to_page(driver, links, page_to_find)
+        print(f"page {page + 1} finished!")
+    file = open('shape_request_log.txt', 'a+')
+    for ID in requested_IDs:
+        file.write(f'{ID}\n')
 # TODO: Set parameters to parse and organize AND download relevant files
 
 def isDownloaded(file_stub):
@@ -363,9 +348,9 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 
 
 def main():
-    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
-    # verifyRequestsReceived("/Users/calebcrandall/Documents/All Mail.mbox")
-    downloadCatchmentTimeSeries()
+    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
+    # verifyRequestsReceived()
+    # downloadCatchmentTimeSeries()
 
 
 if __name__ == '__main__':
