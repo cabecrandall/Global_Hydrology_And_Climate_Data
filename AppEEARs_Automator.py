@@ -26,7 +26,7 @@ def extractGeoData(dataset, start_date, end_date, directory):
     if not os.path.exists('shape_request_log.txt'):
         file = open('shape_request_log.txt', 'w+')
         file.close()
-    file = open('shape_request_log.txt', 'r')
+    file = open("shape_request_log.txt", "r")
 
     # create bug log
     if not os.path.exists('appeears_bug_log.txt'):
@@ -34,16 +34,17 @@ def extractGeoData(dataset, start_date, end_date, directory):
         bugfile.close()
     bug_log = open('appeears_bug_log.txt', 'r')
 
-    finished_shapes = file.readlines()
-    bad_shapes = bug_log.readlines()
-    # process data!
-    for i in range(len(finished_shapes)):
-        finished_shapes[i] = finished_shapes[i][:7]
+    finished_shapes = []
 
-    for i in bad_shapes:
-        if len(i) > 7:
-            ID = longest_numeric_substring(i)
-            finished_shapes.append(ID)
+
+    # process data!
+    for line in file:
+        ID = longest_numeric_substring(line)
+        finished_shapes.append(ID)
+
+    for line in bug_log:
+        ID = longest_numeric_substring(line)
+        finished_shapes.append(ID)
 
     username = input('Enter Username:')
     password = input('Enter Password:')
@@ -129,7 +130,8 @@ def extractGeoData(dataset, start_date, end_date, directory):
                     finishlog.write(f'{ID}\n')
                 elif "tomorrow" in message:
                     print("You reached the limit for daily requests!")
-                    driver.quit()
+                    input("Press enter to continue...")
+                    exit(0)
                 else:
                     bug_log.write(f'{ID} ERROR: {message}\n')
             except:
@@ -160,11 +162,19 @@ def longest_numeric_substring(input_string):
     return longest_numeric
 
 
-def verifyRequestsReceived(page_to_break = 6):
+def verifyRequestsReceived(page_to_break = 2):
     """
     This function checks the "Explore" tab of AppEEARS to see if all requests have been received.
     :return:
     """
+
+    listed_IDs = []
+    file = open('shape_request_log.txt', 'r')
+    for line in file:
+        ID = longest_numeric_substring(line)
+        listed_IDs.append(ID)
+    file.close()
+
     username = input('Enter Username:')
     password = input('Enter Password:')
 
@@ -199,7 +209,7 @@ def verifyRequestsReceived(page_to_break = 6):
             cell = fresh_links[link]
             # resets fresh_links to eliminate staleness
             if len(cell.text) > 6 and cell.text.isnumeric():
-                if cell.text not in requested_IDs:
+                if cell.text not in listed_IDs:
                     requested_IDs.append(cell.text)
         go_to_page(driver, links, page_to_find)
         print(f"page {page + 1} finished!")
@@ -349,7 +359,7 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 
 def main():
     extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
-    # verifyRequestsReceived()
+    # verifyRequestsReceived(page_to_break=6)
     # downloadCatchmentTimeSeries()
 
 

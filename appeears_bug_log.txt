@@ -1,0 +1,2 @@
+06754000 ERROR: No completion message detected
+05286000 ERROR: No completion message detected
