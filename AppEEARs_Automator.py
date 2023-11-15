@@ -131,7 +131,7 @@ def extractGeoData(dataset, start_date, end_date, directory):
                 elif "tomorrow" in message:
                     print("You reached the limit for daily requests!")
                     input("Press enter to continue...")
-                    exit(0)
+                    break
                 else:
                     bug_log.write(f'{ID} ERROR: {message}\n')
             except:
@@ -358,6 +358,7 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 
 
 def main():
+
     extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
     # verifyRequestsReceived(page_to_break=6)
     # downloadCatchmentTimeSeries()
