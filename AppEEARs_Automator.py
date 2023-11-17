@@ -360,7 +360,7 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 def main():
 
     # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
-    verifyRequestsReceived(page_to_break=6)
+    # verifyRequestsReceived(page_to_break=6)
     # downloadCatchmentTimeSeries()
 
 
