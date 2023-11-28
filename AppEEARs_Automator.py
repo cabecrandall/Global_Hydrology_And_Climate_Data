@@ -17,6 +17,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+# TODO: create page location checker
+# TODO: add a fake download for pages without a statistic download file
 
 global exception_counter
 
@@ -251,7 +253,7 @@ def findNumberofPages(driver):
 
 
 
-def downloadCatchmentTimeSeries(skip_to_page=0):
+def downloadCatchmentTimeSeries(skip_to_page=1):
     skip = False
 
     username = input('Enter Username:')
@@ -270,14 +272,14 @@ def downloadCatchmentTimeSeries(skip_to_page=0):
     driver.implicitly_wait(20)
     num_pages = findNumberofPages(driver)
 
-    for page in range(num_pages - (1 + skip_to_page)):
+    for page in range(num_pages - (skip_to_page - 1)):
         print(f"Page {page + 1} starting...")
         table = driver.find_element(By.CSS_SELECTOR,
                                     "#top > app-root > div > main > app-explore > div.table-responsive > table")
         links = table.find_elements(By.TAG_NAME, "a")
 
         fresh_links = driver.find_elements(By.TAG_NAME, "a")
-        page_to_find = page + 2
+        page_to_find = page + 2 + (skip_to_page - 1)
         # loop = tqdm(total=len(links))
         for link in range(len(links)):
             fresh_links = driver.find_elements(By.TAG_NAME, "a")
@@ -359,9 +361,9 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
 
 def main():
 
-    extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
+    # extractGeoData('MOD16A2GF', '01-01-01', '12-31-22', 'GAGES_shapefiles')
     # verifyRequestsReceived(page_to_break=6)
-    # downloadCatchmentTimeSeries()
+    downloadCatchmentTimeSeries()
 
 
 if __name__ == '__main__':

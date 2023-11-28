@@ -22,3 +22,12 @@
 02352500 ERROR: No completion message detected
 14238000 ERROR: No completion message detected
 12143600 ERROR: No completion message detected
+04040000 ERROR: No completion message detected
+03116077 ERROR: Http failure response for https://appeears.earthdatacloud.nasa.gov/api/task: 504 OK
+×
+15820000 ERROR: No completion message detected
+01037380 ERROR: Http failure response for https://appeears.earthdatacloud.nasa.gov/api/task: 504 OK
+×
+06646600 ERROR: No completion message detected
+04062200 ERROR: Http failure response for https://appeears.earthdatacloud.nasa.gov/api/task: 504 OK
+×
