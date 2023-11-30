@@ -20,7 +20,10 @@ def main():
             # TODO: model catchment is ID 4127200
             print(catchment_area)
             df = pd.read_csv(file_path)
-            mega_constant = ((1 / pow(10, 6)) * pow(10, 12))
+            KILOMETERS_PER_MILIMETER = 1e-6
+            LITERS_PER_CUBIC_KILOMETER = 1e12
+
+            mega_constant = (KILOMETERS_PER_MILIMETER * LITERS_PER_CUBIC_KILOMETER)
             mega_constant = mega_constant * catchment_area
             print(mega_constant)
 
