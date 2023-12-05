@@ -309,11 +309,28 @@ def go_to_page(driver, links, page_to_find):
             link_text = fresh_link.text
 
         if link_text == str(page_to_find):
-            box = driver.find_element(By.LINK_TEXT, fresh_link.text)
-            actions = ActionChains(driver)
-            actions.move_to_element(box).click().perform()
-            time.sleep(1)
+            page_correct = False
+            while not page_correct:
+                box = driver.find_element(By.LINK_TEXT, fresh_link.text)
+                actions = ActionChains(driver)
+                actions.move_to_element(box).click().perform()
+                page_correct = verify_correct_page(driver, page_to_find)
             break
+
+
+
+def verify_correct_page(driver, page):
+    active_page = driver.find_element(By.CSS_SELECTOR, "#top > app-root > div > main > app-explore > div.table-responsive > table > thead > tr:nth-child(1) > td > app-pagination-control > div > ul > li.clickable.ng-star-inserted.active")
+    if active_page.text == str(page):
+        return True
+    else:
+        return False
+
+def link_is_active(driver, link):
+    if link.is_enabled():
+        return True
+    return False
+
 
 
 def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_find, link):
@@ -321,18 +338,21 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
         if not skip:
             if isDownloaded(fresh_link.text):
                 skip = True
-        if fresh_link.get_attribute("title") == "Download the contents of the request":
+        if fresh_link.get_attribute("title") == "Download the contents of the request"\
+                and link_is_active(driver, fresh_link):
             if not skip:
                 actions = ActionChains(driver)
                 actions.move_to_element(fresh_link)
                 actions.click()
                 actions.perform()
+                # select file!
+                ID = driver.find_element(By.CSS_SELECTOR,
+                                         "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
+                make_blank_csv("/Users/calebcrandall/Downloads", ID)
                 # download file!
                 target = driver.find_element(By.CSS_SELECTOR,
                                              "#top > app-root > div > main > app-download-task > div.row > div > div.panel.panel-default.table-responsive > table > tbody > tr:nth-child(7) > td:nth-child(1) > a")
                 actions.move_to_element(target).click().perform()
-                ID = driver.find_element(By.CSS_SELECTOR,
-                                         "#top > app-root > div > main > app-download-task > div.row > div > div:nth-child(1) > div.panel-heading > a").text
                 renameDownloadToID("MOD16A2GF", ID)
                 driver.back()
                 # This dummy variable (below) is needed to prove that the page loaded
@@ -350,13 +370,21 @@ def analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_fin
             skip = False
         return fresh_links, skip
     except (Exception):
-        print("Exception: ")
+        print(f"Exception:")
         driver.get('https://appeears.earthdatacloud.nasa.gov/explore')
         go_to_page(driver, links, page_to_find)
         fresh_links = driver.find_elements(By.TAG_NAME, "a")
         fresh_link = fresh_links[link]
+        skip = True
         fresh_links, skip = analyze_link(driver, fresh_link, fresh_links, links, skip, page, page_to_find, link)
         return fresh_links, skip
+
+
+def make_blank_csv(directory, ID):
+    file_name = f'{ID}.csv'
+    path = os.path.join(directory, file_name)
+    file = open(path, 'w+')
+    file.close()
 
 
 def main():
