@@ -32,7 +32,7 @@ def column_adder(frame, column):
         result = pd.concat([frame, extension], ignore_index=True)
         return result
     else:
-        writeToCSV(frame, column, "FilledFinalSeries")
+        # writeToCSV(frame, column, "FilledFinalSeries")
         return frame
 
     # This bad boy has the same decision parameters as data_is_present, but it
@@ -70,11 +70,11 @@ def processDates(frame, column):
 
     # Save a value from a different column in that row
 
-def combineCatchmentData(frame, column):
-    tempFrame = combiner(frame, column, 'Temp')
-    twoThirdsFrame = combiner(tempFrame, column, 'Precip')
-    almostFinishedFrame = combiner(twoThirdsFrame, column, 'ET')
-    finishedFrame = combiner(almostFinishedFrame, column, 'PET')
+def combineCatchmentData(frame, column, directories):
+    tempFrame = combiner(frame, column, directories["Temp"])
+    twoThirdsFrame = combiner(tempFrame, column, directories["Precip"])
+    almostFinishedFrame = combiner(twoThirdsFrame, column, directories["ET"])
+    finishedFrame = combiner(almostFinishedFrame, column, directories["PET"])
     finishedFrame = finishedFrame.rename(columns={'Daily Average LST [C]' : 'average temperature (C)'})
     # if data_is_present:
         # writeToCSV(finishedFrame, column)
@@ -83,7 +83,7 @@ def combineCatchmentData(frame, column):
 
 def combiner(frame, column, type):
     try:
-        tempFolder = "Basin_" + type + "_TS_for_model"
+        tempFolder = type
         file = "basin_" + str(column) + ".csv"
         path = os.path.join(tempFolder, file)
         tempFrame = pd.read_csv(path)
@@ -99,15 +99,18 @@ def writeToCSV(frame, column, path='/Users/calebcrandall/Documents/idealabs/hydr
     file = "basin_" + str(column) + ".csv"
     frame.to_csv(os.path.join(path, file), index=False)
 
-def createCatchmentfile(column, frame):
+def createCatchmentfile(column, frame, directories):
     newFrame = frame[['Date', column]]
     finalFrame = newFrame.rename(columns={column : 'flow'})
-    finalFrame = finalFrame.rename(columns={'Date' : 'Date'})
+    try:
+        finalFrame = finalFrame.rename(columns={'date' : 'Date'})
+    except:
+        finalFrame = finalFrame.rename(columns={'Date' : 'Date'})
     viableRows = finalFrame.notna().all(axis=1)
     #print(finalFrame[viableRows])
     finalFrame = finalFrame[viableRows]
     # ^^^ done before adding other columns, because only flow data needs correcting in theory
-    return combineCatchmentData(finalFrame, column)
+    return combineCatchmentData(finalFrame, column, directories)
 
     # writeToCSV(finalFrame[viableRows], column)
     # finalFrame = newFrame.dropna(axis=1)
@@ -126,17 +129,17 @@ def collectColumns(frame):
     # and placing the last catchment you want correlated in the "if" statement
 
 
-def matchCatchments(frame):
+def matchCatchments(frame, directories):
     collectColumns(frame)
     # The above line MUST be used instead of the artifical ID set, keeperCats, for the actual algorithm
     loop = tqdm(total=len(keeperCats))
     for column in keeperCats:
-        susFrame = createCatchmentfile(column, frame)
+        susFrame = createCatchmentfile(column, frame, directories)
         #if data_is_present(susFrame):
         # The above line is an optional measure, to make the correlation sheet look more refined :)
         csvFrame = column_adder(susFrame, column)
         # DO NOT FORGET TO UNCOMMENT THIS LINE BELOW FOR LATER!
-        # writeToCSV(csvFrame, column)
+        writeToCSV(csvFrame, column, directories["dest"])
         # These classes need to be fixed for PET.
         # catch = c.catchment(column, csvFrame)
         # x = indexcatchments.indexcatchments()

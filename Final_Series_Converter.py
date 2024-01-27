@@ -107,13 +107,18 @@ def Unit_Conversion_Verifier(directory):
         loop.update(1)
     deficits.to_csv('Deficit_Percentages.csv', index=False)
 
-def main():
+# def main():
     # toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
     # toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
-    Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
+    # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
+
+def convert(directory):
+    toLitersPerDay(directory, directory + "_LitersPerDay")
+    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm")
 
 if __name__ == '__main__':
-    main()
+    Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
+    # main()
     exit(0)
 
 
