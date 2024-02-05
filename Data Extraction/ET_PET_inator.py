@@ -12,6 +12,8 @@ import pandas as pd
 from tqdm import tqdm
 
 def convert_8day_to_daily(folder, destination):
+    if not os.path.exists(destination):
+        os.makedirs(destination)
     loop = tqdm(total=len(os.listdir(folder)), position=0, leave=False)
     for file in os.listdir(folder):
         if file.endswith(".csv"):
@@ -45,12 +47,15 @@ def rename_ET_to_PET(folder):
             frame = frame.rename(columns={'ET [kg/m^2/day]': 'PET [kg/m^2/day]'})
             frame.to_csv(path, index=False)
         loop.update(1)
-def main():
-    # convert_8day_to_daily("Basin_ET_TS", "Basin_ET_TS_for_model")
-    # convert_8day_to_daily("Basin_PET_TS", "Basin_PET_TS_for_model")
-    rename_ET_to_PET("Basin_PET_TS_for_model")
+
+
+def main(ET_directory, PET_directory):
+    convert_8day_to_daily(ET_directory, "ET_TS")
+    convert_8day_to_daily(PET_directory, "PET_TS")
+    rename_ET_to_PET("PET_TS")
+
 
 
 if __name__ == "__main__":
-    main()
+    main("../ET_TS_8Day", "../PET_TS_8Day")
     exit(0)

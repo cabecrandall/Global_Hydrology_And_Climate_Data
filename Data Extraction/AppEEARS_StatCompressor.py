@@ -41,7 +41,7 @@ def compress_ET_PET_Stats(folder, ET_output_folder, PET_output_folder):
         loop.update(1)
 
 def main():
-    compress_ET_PET_Stats("MOD16A2GF_ET_PET", "Basin_ET_TS", "Basin_PET_TS")
+    compress_ET_PET_Stats("../GAGES_RAW_ET_PET", "../ET_TS_8Day", "../PET_TS_8Day")
 
 if __name__ == "__main__":
     main()
