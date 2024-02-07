@@ -5,16 +5,27 @@ universal units of Liters/Day or Liters/Km^2/Day.
 import os
 import pandas as pd
 from tqdm import tqdm
-metadata = pd.read_csv('catchmentMetadata.csv')
 
-def toLitersPerDay(directory, destination):
+def longest_numeric_substring(string):
+    longest = 0
+    current = 0
+    for char in string:
+        if char.isnumeric():
+            current += 1
+        else:
+            if current > longest:
+                longest = current
+            current = 0
+    return longest
+
+def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadata_area_column):
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
-            ID = file[-11:-4]
-            catchment_area = metadata.loc[metadata['Catchment ID'] == int(ID), 'Catchment Area'].values
+            ID = longest_numeric_substring(file)
+            catchment_area = metadata.loc[metadata[metadata_id_column] == ID, metadata_area_column].values
             if len(catchment_area) == 0 or not catchment_area[0] > 0:
-                print("No catchment area found for ID: " + ID)
+                print("No catchment area found for ID: " + str(ID))
                 continue
             else:
                 catchment_area = catchment_area[0]
@@ -56,14 +67,14 @@ def toLitersPerDay(directory, destination):
         loop.update(1)
 
 
-def toLitersPerDayPerSqKm(directory, destination):
+def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, metadata_area_column):
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
-            ID = file[-11:-4]
-            catchment_area = metadata.loc[metadata['Catchment ID'] == int(ID), 'Catchment Area'].values
+            ID = longest_numeric_substring(file)
+            catchment_area = metadata.loc[metadata[metadata_id_column] == ID, metadata_area_column].values
             if len(catchment_area) == 0 or not catchment_area[0] > 0:
-                print("No catchment area found for ID: " + ID)
+                print("No catchment area found for ID: " + str(ID))
                 continue
             else:
                 catchment_area = catchment_area[0]
@@ -108,17 +119,18 @@ def Unit_Conversion_Verifier(directory):
     deficits.to_csv('Deficit_Percentages.csv', index=False)
 
 # def main():
-    # toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
-    # toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
+#     toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
+#     toLitersPerDayPerSqKm("FilledFinalSeries", "FilledFinalSeries_LitersPerDayPerSqKm")
     # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
 
-def convert(directory):
-    toLitersPerDay(directory, directory + "_LitersPerDay")
-    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm")
+def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
+    metadata = pd.read_csv(metadata_path)
+    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column, metadata_area_column)
+    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column, metadata_area_column)
 
 if __name__ == '__main__':
-    Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
-    # main()
+    # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
+    convert("GAGES_TS", "GAGES_Metadata.csv", "GAGES_ID", "AREA")
     exit(0)
 
 
