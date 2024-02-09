@@ -6,6 +6,10 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
+
+
+
+
 def longest_numeric_substring(string):
     longest = 0
     current = 0
@@ -18,7 +22,8 @@ def longest_numeric_substring(string):
             current = 0
     return longest
 
-def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadata_area_column):
+def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadata_area_column,
+                   ignore_columns=[]):
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
@@ -37,27 +42,31 @@ def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadat
             SECONDS_PER_DAY = 86400
 
             frame.set_index('Date', inplace=True)
-            frame.iloc[:, 0] = frame.iloc[:, 0].mul(LITERS_PER_CUBIC_METER * SECONDS_PER_DAY) # flow to liters per day
+
+            if "flow" not in ignore_columns:
+                frame.iloc[:, 0] = frame.iloc[:, 0].mul(LITERS_PER_CUBIC_METER * SECONDS_PER_DAY) # flow to liters per day
 
             KILOMETERS_PER_MILIMETER = 1e-6
             LITERS_PER_CUBIC_KILOMETER = 1e12
 
-            precip_conversion_factor = (KILOMETERS_PER_MILIMETER * LITERS_PER_CUBIC_KILOMETER)
-            # optimized rain to liters per day
-            frame["precipitation"] = frame["precipitation"].mul(catchment_area)
-            frame["precipitation"] = frame["precipitation"].mul(precip_conversion_factor)
+            if "precipitation" not in ignore_columns:
+                precip_conversion_factor = (KILOMETERS_PER_MILIMETER * LITERS_PER_CUBIC_KILOMETER)
+                # optimized rain to liters per day
+                frame["precipitation"] = frame["precipitation"].mul(catchment_area)
+                frame["precipitation"] = frame["precipitation"].mul(precip_conversion_factor)
 
             KILOGRAM_TO_LITERS = 1
             SQUARE_METERS_PER_SQUARE_KILOMETER = 1e6
 
+            if "ET" not in ignore_columns:
+                # optimized ET to liters per day
+                frame["ET [kg/m^2/day]"] = frame["ET [kg/m^2/day]"].mul(SQUARE_METERS_PER_SQUARE_KILOMETER * KILOGRAM_TO_LITERS)
+                frame["ET [kg/m^2/day]"] = frame["ET [kg/m^2/day]"].mul(catchment_area)
 
-            # optimized ET to liters per day
-            frame["ET [kg/m^2/day]"] = frame["ET [kg/m^2/day]"].mul(SQUARE_METERS_PER_SQUARE_KILOMETER * KILOGRAM_TO_LITERS)
-            frame["ET [kg/m^2/day]"] = frame["ET [kg/m^2/day]"].mul(catchment_area)
-
-            # optimized PET to liters per day
-            frame["PET [kg/m^2/day]"] = frame["PET [kg/m^2/day]"].mul(SQUARE_METERS_PER_SQUARE_KILOMETER * KILOGRAM_TO_LITERS)
-            frame["PET [kg/m^2/day]"] = frame["PET [kg/m^2/day]"].mul(catchment_area)
+            if "PET" not in ignore_columns:
+                # optimized PET to liters per day
+                frame["PET [kg/m^2/day]"] = frame["PET [kg/m^2/day]"].mul(SQUARE_METERS_PER_SQUARE_KILOMETER * KILOGRAM_TO_LITERS)
+                frame["PET [kg/m^2/day]"] = frame["PET [kg/m^2/day]"].mul(catchment_area)
 
             frame.rename(columns={'ET [kg/m^2/day]': 'ET', 'PET [kg/m^2/day]': 'PET'}, inplace=True)
 
@@ -67,7 +76,8 @@ def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadat
         loop.update(1)
 
 
-def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, metadata_area_column):
+def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, metadata_area_column,
+                          ignore_columns=[]):
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
@@ -82,17 +92,23 @@ def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, 
             frame = pd.read_csv(path)
             frame['Date'] = pd.to_datetime(frame['Date'])
             frame.set_index('Date', inplace=True)
-            frame.iloc[:, 0] = frame.iloc[:, 0].mul(86400000)
-            frame.iloc[:, 0] = frame.iloc[:, 0].floordiv(catchment_area)
 
-            # optimized rain to liters per day per sq km
-            frame.iloc[:, 2] = frame.iloc[:, 2].mul(1000000)
+            # optimized flow to liters per day per sq km
+            if "flow" not in ignore_columns:
+                frame.iloc[:, 0] = frame.iloc[:, 0].mul(86400000)
+                frame.iloc[:, 0] = frame.iloc[:, 0].floordiv(catchment_area)
 
-            # optimized ET to liters per day per sq km
-            frame.iloc[:, 3] = frame.iloc[:, 3].mul(1000000)
+            if "precipitation" not in ignore_columns:
+                # optimized rain to liters per day per sq km
+                frame.iloc[:, 2] = frame.iloc[:, 2].mul(1000000)
 
-            # optimized PET to liters per day per sq km
-            frame.iloc[:, 4] = frame.iloc[:, 4].mul(1000000)
+            if "ET" not in ignore_columns:
+                # optimized ET to liters per day per sq km
+                frame.iloc[:, 3] = frame.iloc[:, 3].mul(1000000)
+
+            if "PET" not in ignore_columns:
+                # optimized PET to liters per day per sq km
+                frame.iloc[:, 4] = frame.iloc[:, 4].mul(1000000)
 
             frame.rename(columns={'ET [kg/m^2/day]': 'ET', 'PET [kg/m^2/day]': 'PET'}, inplace=True)
             frame.to_csv(os.path.join(destination, file), index=True)
@@ -125,12 +141,15 @@ def Unit_Conversion_Verifier(directory):
 
 def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
     metadata = pd.read_csv(metadata_path)
-    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column, metadata_area_column)
-    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column, metadata_area_column)
+    verify_column_type(metadata, metadata_id_column, str)
+    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
+                   metadata_area_column, ignore_columns=["flow"])
+    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column,
+                          metadata_area_column, ignore_columns=["flow"])
 
 if __name__ == '__main__':
     # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
-    convert("GAGES_TS", "GAGES_Metadata.csv", "GAGES_ID", "AREA")
+    convert("GAGES_TS", "GAGES_Metadata.csv", "GAGE_ID", "AREA")
     exit(0)
 
 
