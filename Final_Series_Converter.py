@@ -1,33 +1,32 @@
 """
 This file converts the final combined series to one or both
 universal units of Liters/Day or Liters/Km^2/Day.
+
+The metadata area column used as an argumnt in this function is
+required to be in units of square kilometers.
 """
 import os
 import pandas as pd
 from tqdm import tqdm
+import re
+import GAGES_Helper as gh
 
 
-
-
-
-def longest_numeric_substring(string):
-    longest = 0
-    current = 0
-    for char in string:
-        if char.isnumeric():
-            current += 1
-        else:
-            if current > longest:
-                longest = current
-            current = 0
-    return longest
 
 def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadata_area_column,
-                   ignore_columns=[]):
+                   ignore_columns=None):
+
+    if ignore_columns is None:
+        ignore_columns = []
+
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
+
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
-            ID = longest_numeric_substring(file)
+            ID = max(re.findall(r'\d+', file), key=len)
             catchment_area = metadata.loc[metadata[metadata_id_column] == ID, metadata_area_column].values
             if len(catchment_area) == 0 or not catchment_area[0] > 0:
                 print("No catchment area found for ID: " + str(ID))
@@ -77,11 +76,17 @@ def toLitersPerDay(directory, destination, metadata, metadata_id_column, metadat
 
 
 def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, metadata_area_column,
-                          ignore_columns=[]):
+                          ignore_columns=None):
+
+    if not os.path.exists(destination):
+        os.makedirs(destination)
+
+    if ignore_columns is None:
+        ignore_columns = []
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
     for file in os.listdir(directory):
         if file.endswith(".csv"):
-            ID = longest_numeric_substring(file)
+            ID = max(re.findall(r'\d+', file), key=len)
             catchment_area = metadata.loc[metadata[metadata_id_column] == ID, metadata_area_column].values
             if len(catchment_area) == 0 or not catchment_area[0] > 0:
                 print("No catchment area found for ID: " + str(ID))
@@ -95,20 +100,20 @@ def toLitersPerDayPerSqKm(directory, destination, metadata, metadata_id_column, 
 
             # optimized flow to liters per day per sq km
             if "flow" not in ignore_columns:
-                frame.iloc[:, 0] = frame.iloc[:, 0].mul(86400000)
-                frame.iloc[:, 0] = frame.iloc[:, 0].floordiv(catchment_area)
+                frame['flow'] = frame['flow'].mul(86400000)
+                frame['flow'] = frame['flow'].floordiv(catchment_area)
 
             if "precipitation" not in ignore_columns:
                 # optimized rain to liters per day per sq km
-                frame.iloc[:, 2] = frame.iloc[:, 2].mul(1000000)
+                frame['precipitation'] = frame['precipitation'].mul(1000000)
 
             if "ET" not in ignore_columns:
                 # optimized ET to liters per day per sq km
-                frame.iloc[:, 3] = frame.iloc[:, 3].mul(1000000)
+                frame["ET [kg/m^2/day]"] = frame["ET [kg/m^2/day]"].mul(1000000)
 
             if "PET" not in ignore_columns:
                 # optimized PET to liters per day per sq km
-                frame.iloc[:, 4] = frame.iloc[:, 4].mul(1000000)
+                frame["PET [kg/m^2/day]"] = frame["PET [kg/m^2/day]"].mul(1000000)
 
             frame.rename(columns={'ET [kg/m^2/day]': 'ET', 'PET [kg/m^2/day]': 'PET'}, inplace=True)
             frame.to_csv(os.path.join(destination, file), index=True)
@@ -140,10 +145,11 @@ def Unit_Conversion_Verifier(directory):
     # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
 
 def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
-    metadata = pd.read_csv(metadata_path)
-    verify_column_type(metadata, metadata_id_column, str)
-    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
-                   metadata_area_column, ignore_columns=["flow"])
+    if "GAGES" in directory:
+        gh.add_leading_zeroes(metadata_path, "GAGE_ID", metadata_path)
+    metadata = pd.read_csv(metadata_path, converters={'GAGE_ID': str})
+    # toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
+    #                metadata_area_column, ignore_columns=["flow"])
     toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column,
                           metadata_area_column, ignore_columns=["flow"])
 

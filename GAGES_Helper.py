@@ -4,28 +4,45 @@ hydrology data may be imported to another module to help
 with common inconsistencies in processing the data.
 """
 
-def verify_column_type(df, id_column, type):
-    """
-    This function verifies that the column type of the id_column is numeric
-    :param df: a pandas dataframe
-    :param id_column: the column to verify
-    :param type: the type to verify
-    :return: the original dataframe if the column's type matches
-        the type parameter, otherwise the dataframe column is
-        converted to the type parameter and returned.
-    """
-    if df[id_column].dtype != type:
-        df = df.astype({id_column: type})
-    return df
+import pandas as pd
+import os
 
-def add_leading_zeroes(df, id_column, string):
-    """
-    This function adds leading strings to the id_column of a dataframe
-    :param df: a pandas dataframe
-    :param id_column: the column to add leading zeroes to
-    :param zeroes: the number of leading zeroes to add
-    :return: the original dataframe with the id_column modified
-    """
-    # TODO: make it conditional on string length
-    df[id_column] = df[id_column].apply(lambda x: str(x).zfill(string))
-    return df
+
+"""
+takes any df (including GAGES metadata for our purposes) and converts
+their default units of square meters to square kilometers.
+"""
+def column_square_meters_to_square_kilometers(directory, column_name, new_directory=None):
+    for file in os.listdir(directory):
+        if file.endswith(".csv"):
+            path = os.path.join(directory, file)
+            frame = pd.read_csv(path)
+            frame[column_name] = frame[column_name].div(1e6)
+            if new_directory is not None:
+                output_path = os.path.join(new_directory, file)
+                frame.to_csv(output_path, index=False)
+            else:
+                frame.to_csv(path, index=False)
+
+
+def add_leading_zeroes(directory_or_file, column_name, new_directory_or_file=None):
+    if os.path.isfile(directory_or_file):
+        frame = pd.read_csv(directory_or_file, dtype={column_name: str})
+        frame[column_name] = frame[column_name].apply(lambda x: '0' + x if len(x) < 8 else x)
+        if new_directory_or_file is not None:
+            frame.to_csv(new_directory_or_file, index=False)
+        else:
+            frame.to_csv(directory_or_file, index=False)
+    else:
+        directory = directory_or_file
+        new_directory = new_directory_or_file
+        for file in os.listdir(directory):
+            if file.endswith(".csv"):
+                path = os.path.join(directory, file)
+                frame = pd.read_csv(path)
+                frame[column_name] = frame[column_name].apply(lambda x: '{0:0>2}'.format(x))
+                if new_directory is not None:
+                    output_path = os.path.join(new_directory, file)
+                    frame.to_csv(output_path, index=False)
+                else:
+                    frame.to_csv(path, index=False)
