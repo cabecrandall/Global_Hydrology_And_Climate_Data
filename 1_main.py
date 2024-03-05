@@ -2,7 +2,7 @@ import pandas as pd
 import indexcatchments
 # import catchmentcharts
 import matchcatchments as matcher
-import Final_Series_Filter
+import Series_Filter
 import Final_Series_Converter
 
 # quick class instance setup
@@ -42,32 +42,10 @@ def main(make_flow_series=False, generate_charts=False, flowdir=None, tempdir=No
     Final_Series_Converter.convert(dest_dir)
 
 
-
-
-
-
-
-    # metadf  = pd.read_csv("catchmentMetadata.csv")
-
-    # This command below slows the program down by around 10 seconds, so remove it if you're not doing a
-    # massive correlation. VVV
-    # flowdf = pd.read_csv("allDailyFlowData.csv")
-
-
     # MAIN CORRELATION AND VISUALIZATION TOOLS, ACTIVATE AND DEACTIVATE AS NEEDED
     # matcher.matchCatchments(flowdf) Creates catchment files.
     # i.correlateAllCatchments() Does lots of things w
     # chart(include_flow=True) Will be better defined once we find figures that we will uuse for the study!
-
-    #ONE TIME USES:
-    # Metadata_Transform.updateMetadata()
-
-    #print(matcher.keeperCats)
-
-
-    # you could do: you have a dataframe for each catchment,
-    #the better way: this column represents the correlation between catchment and something, and the rows are each catchment
-    #maybe break it into years, do a separate row
 
 
 if __name__ == "__main__":

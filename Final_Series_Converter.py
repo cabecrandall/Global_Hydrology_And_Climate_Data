@@ -145,18 +145,18 @@ def Unit_Conversion_Verifier(directory):
     # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
 
 def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
-    if "GAGES" in directory:
-        gh.add_leading_zeroes(metadata_path, "GAGE_ID", metadata_path)
-    metadata = pd.read_csv(metadata_path, converters={'GAGE_ID': str})
-    # toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
-    #                metadata_area_column, ignore_columns=["flow"])
+    metadata = pd.read_csv(metadata_path, converters={metadata_id_column: str})
+    # if "GAGES" in directory:
+        # gh.add_leading_zeroes(metadata_path, "STAID", metadata_path)
+    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
+                   metadata_area_column, ignore_columns=["flow"])
     toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column,
                           metadata_area_column, ignore_columns=["flow"])
 
 if __name__ == '__main__':
     # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
-    convert("GAGES_TS", "GAGES_Metadata.csv", "GAGE_ID", "AREA")
-    exit(0)
+    convert("GAGES_TS", "metadata.csv", "STAID", "DRAIN_SQKM")
+    exit()
 
 
 

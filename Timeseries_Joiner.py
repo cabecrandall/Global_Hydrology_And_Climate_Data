@@ -41,6 +41,7 @@ def joiner(directories, output_folder):
                 # Read the file
                 path = os.path.join(directories[0], file)
                 frame = pd.read_csv(path)
+                frame["Date"] = pd.to_datetime(frame["Date"])
                 frame = frame.set_index("Date")
                 # Iterate through the other directories
                 for directory in directories[1:]:
@@ -48,6 +49,7 @@ def joiner(directories, output_folder):
                     # Read the file
                     path = os.path.join(directory, file)
                     temp_frame = pd.read_csv(path)
+                    temp_frame["Date"] = pd.to_datetime(temp_frame["Date"])
                     temp_frame = temp_frame.set_index("Date")
                     # Merge the frames on the date column
                     frame = pd.merge(frame, temp_frame, on='Date', how='left')
@@ -62,9 +64,10 @@ def joiner(directories, output_folder):
         loop.update(1)
 
 def main():
-    # rename_columns_in_directory("Precip_TS", "date", "Date", "New_Precip_TS")
+    # rename_columns_in_directory("Flow_TS", "date", "Date", "New_Flow_TS")
 
-    directories_to_join = ["Temp_TS_Filled",
+    directories_to_join = ["Flow_TS",
+                           "Temp_TS_Filled",
                            "Precip_TS",
                            "ET_TS",
                            "PET_TS"]
