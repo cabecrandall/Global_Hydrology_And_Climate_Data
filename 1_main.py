@@ -1,16 +1,16 @@
 import pandas as pd
-import indexcatchments
+# import indexcatchments
 # import catchmentcharts
-import matchcatchments as matcher
-import Series_Filter
-import Final_Series_Converter
+# import matchcatchments as matcher
+from Data_Processing import Series_Filter, Timeseries_Joiner
+from Data_Processing import Final_Series_Converter
 
 # quick class instance setup
-i = indexcatchments.indexcatchments()
+# i = indexcatchments.indexcatchments()
 # chart = catchmentcharts.charts
 
 def makeFlowSeries():
-    import Flow_Series_Maker
+    from Data_Processing import Flow_Series_Maker
     Flow_Series_Maker.main()
 
 def main(make_flow_series=False, generate_charts=False, flowdir=None, tempdir=None, precipdir=None, ETdir=None, PETdir=None, dest_dir=None, filter_final=False):
@@ -33,19 +33,13 @@ def main(make_flow_series=False, generate_charts=False, flowdir=None, tempdir=No
 
     """
 
-    dir_dict = {"temp": tempdir, "precip": precipdir, "ET": ETdir, "PET": PETdir, "dest": dest_dir}
+    dir_dict = {"flow": flowdir, "temp": tempdir, "precip": precipdir, "ET": ETdir, "PET": PETdir, "dest": dest_dir}
     if make_flow_series:
         import Flow_Series_Maker
         Flow_Series_Maker.main()
-    flow = pd.read_csv(flowdir)
-    matcher.matchCatchments(flow, dir_dict)
-    Final_Series_Converter.convert(dest_dir)
-
-
-    # MAIN CORRELATION AND VISUALIZATION TOOLS, ACTIVATE AND DEACTIVATE AS NEEDED
-    # matcher.matchCatchments(flowdf) Creates catchment files.
-    # i.correlateAllCatchments() Does lots of things w
-    # chart(include_flow=True) Will be better defined once we find figures that we will uuse for the study!
+    # flow = pd.read_csv(flowdir)
+    Timeseries_Joiner.main(dir_dict.values(), "GAGES_TS")
+    Final_Series_Converter.convert(dest_dir, "metadata.csv", "STAID", 'DRAIN_SQKM')
 
 
 if __name__ == "__main__":

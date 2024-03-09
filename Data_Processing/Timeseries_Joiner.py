@@ -63,16 +63,12 @@ def joiner(directories, output_folder):
                 print("Error processing file: " + exception_directory + "/" + file)
         loop.update(1)
 
-def main():
+def main(directories_to_join, dest_dir):
     # rename_columns_in_directory("Flow_TS", "date", "Date", "New_Flow_TS")
 
-    directories_to_join = ["Flow_TS",
-                           "Temp_TS_Filled",
-                           "Precip_TS",
-                           "ET_TS",
-                           "PET_TS"]
+    directories_to_join = directories_to_join
 
-    joiner(directories_to_join, "GAGES_TS")
+    joiner(directories_to_join, dest_dir)
 
 if __name__ == "__main__":
     main()
