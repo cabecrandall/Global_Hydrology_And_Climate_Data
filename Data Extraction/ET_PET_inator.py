@@ -11,7 +11,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-def convert_8day_to_daily(folder, destination):
+def convert_8day_to_daily(folder, destination, date_col="Date", pet_prefix=""):
     if not os.path.exists(destination):
         os.makedirs(destination)
     loop = tqdm(total=len(os.listdir(folder)), position=0, leave=False)
@@ -19,11 +19,13 @@ def convert_8day_to_daily(folder, destination):
         if file.endswith(".csv"):
             path = os.path.join(folder, file)
             frame = pd.read_csv(path)
-            frame["Date"] = pd.to_datetime(frame["Date"])
-            frame = frame.set_index("Date")
+            frame[date_col] = pd.to_datetime(frame[date_col])
+            frame = frame.set_index(date_col)
+            frame = frame.mul(0.1) # see user guide
             # Extend the frame to have a row for each day
             frame = frame.resample("D").asfreq()
-            frame = frame.ffill()
+            frame = frame.bfill()
+            frame = frame.iloc[2:, :]
             frame['week_number'] = frame.index.isocalendar().week
             frame['week_number'] = frame['week_number'].mul(frame.index.isocalendar().year)
             # Divide groups of 8 identical values by 8,
@@ -31,8 +33,8 @@ def convert_8day_to_daily(folder, destination):
             # This is done by grouping by the index
             # and dividing the groups by the length of the group
             frame = frame.groupby(['week_number']).transform(lambda x: x / len(x))
-            frame = frame[['Mean']]
-            frame = frame.rename(columns={'Mean': 'ET [kg/m^2/day]'})
+            frame = frame[[f'Region {pet_prefix}ET [kg/m^2/8day]']]
+            frame = frame.rename(columns={f'Region {pet_prefix}ET [kg/m^2/8day]': f'{pet_prefix}ET [kg/m^2/day]'})
             frame = frame.reset_index()
             frame.to_csv(os.path.join(destination, file), index=False)
         loop.update(1)
@@ -50,12 +52,12 @@ def rename_ET_to_PET(folder):
 
 
 def main(ET_directory, PET_directory):
-    convert_8day_to_daily(ET_directory, "ET_TS")
-    convert_8day_to_daily(PET_directory, "PET_TS")
-    rename_ET_to_PET("PET_TS")
+    convert_8day_to_daily(ET_directory, "ET_TS", date_col="Unnamed: 0")
+    convert_8day_to_daily(PET_directory, "PET_TS", date_col="Unnamed: 0", pet_prefix="P")
+    # rename_ET_to_PET("PET_TS")
 
 
 
 if __name__ == "__main__":
-    main("../ET_TS_8Day", "../PET_TS_8Day")
+    main("ET_TS_unfilled", "PET_TS_unfilled")
     exit(0)

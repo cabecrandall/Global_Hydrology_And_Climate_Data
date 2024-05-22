@@ -137,7 +137,7 @@ def Unit_Conversion_Verifier(directory):
             ID = file[-11:-4] # maybe longest numeric substring in future
             deficits = deficits.append({'Catchment ID': ID, 'Deficit Percentage': deficit_percentage * 100}, ignore_index=True)
         loop.update(1)
-    deficits.to_csv('Deficit_Percentages.csv', index=False)
+    deficits.to_csv('../Deficit_Percentages_GRDC.csv', index=False)
 
 # def main():
 #     toLitersPerDay("FilledFinalSeries", "FilledFinalSeries_LitersPerDay")
@@ -148,14 +148,14 @@ def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
     metadata = pd.read_csv(metadata_path, converters={metadata_id_column: str})
     # if "GAGES" in directory:
         # gh.add_leading_zeroes(metadata_path, "STAID", metadata_path)
-    toLitersPerDay(directory, directory + "_LitersPerDay", metadata, metadata_id_column,
-                   metadata_area_column, ignore_columns=["flow"])
-    toLitersPerDayPerSqKm(directory, directory + "_LitersPerDayPerSqKm", metadata, metadata_id_column,
-                          metadata_area_column, ignore_columns=["flow"])
+    toLitersPerDay(directory, directory + "LitersPerDay", metadata, metadata_id_column,
+                   metadata_area_column)
+    toLitersPerDayPerSqKm(directory, directory + "LitersPerDayPerSqKm", metadata, metadata_id_column,
+                          metadata_area_column)
 
 if __name__ == '__main__':
-    # Unit_Conversion_Verifier("FilledFinalSeries_LitersPerDayPerSqKm")
-    convert("GAGES_TS", "metadata.csv", "STAID", "DRAIN_SQKM")
+    Unit_Conversion_Verifier("../FilledFinalSeriesLitersPerDayPerSqKm")
+    # convert("../FilledFinalSeries", "../catchmentMetadata.csv", "Catchment ID", "Catchment Area")
     exit()
 
 

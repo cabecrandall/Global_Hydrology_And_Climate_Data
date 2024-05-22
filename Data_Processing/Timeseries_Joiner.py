@@ -9,6 +9,10 @@ as parameters, input as an array of strings
 import pandas as pd
 import os
 from tqdm import tqdm
+import re
+
+def longest_numeric_substring(string):
+    return max(re.findall(r'\d+', string), key=len)
 
 def rename_columns_in_directory(directory, old_column_name, new_column_name, new_directory=None):
     loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
@@ -63,12 +67,50 @@ def joiner(directories, output_folder):
                 print("Error processing file: " + exception_directory + "/" + file)
         loop.update(1)
 
+def replace_column_in_directory(directory, col_to_replace, new_cols_directory):
+    # Iterate through the files in the first directory
+    loop = tqdm(total=len(os.listdir(directory)), position=0, leave=False)
+    for file in os.listdir(directory):
+        # Only process the csv files
+        if file.endswith(".csv"):
+            try:
+                # Read the file
+                path = os.path.join(directory, file)
+                frame = pd.read_csv(path)
+                frame["Date"] = pd.to_datetime(frame["Date"])
+                frame = frame.set_index("Date")
+                # drop bad column
+                frame = frame.drop(columns=col_to_replace)
+                # set up name
+                ID = str(longest_numeric_substring(file))
+                # Read the file
+                path = os.path.join(new_cols_directory, "basin__" + ID + ".csv")
+                temp_frame = pd.read_csv(path)
+                temp_frame["Date"] = pd.to_datetime(temp_frame["Date"])
+                temp_frame = temp_frame.set_index("Date")
+                # Merge the frames on the date column
+                frame = pd.merge(frame, temp_frame, on='Date', how='left')
+                # Write the joined frame to the output folder
+                output_path = os.path.join(directory, file)
+                frame = frame.dropna()
+                frame = frame.rename(columns={'Daily Average LST [C]' : 'average temperature (C)'})
+                frame = frame.reset_index()
+                frame.to_csv(output_path, index=False)
+            except Exception as e:
+                print("Error processing file: " + " " + file)
+        loop.update(1)
+
 def main(directories_to_join, dest_dir):
-    # rename_columns_in_directory("Flow_TS", "date", "Date", "New_Flow_TS")
+    # rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
+    # rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
 
-    directories_to_join = directories_to_join
+    # replace_column_in_directory("../FilledFinalSeries", "ET [kg/m^2/day]", "../ET_TS")
+    replace_column_in_directory("../FilledFinalSeries", "PET [kg/m^2/day]", "../PET_TS")
 
-    joiner(directories_to_join, dest_dir)
+
+    # directories_to_join = directories_to_join
+
+    # joiner(directories_to_join, dest_dir)
 
 if __name__ == "__main__":
-    main()
+    main("uhh", "uhh")
