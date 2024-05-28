@@ -84,7 +84,7 @@ def replace_column_in_directory(directory, col_to_replace, new_cols_directory):
                 # set up name
                 ID = str(longest_numeric_substring(file))
                 # Read the file
-                path = os.path.join(new_cols_directory, "basin__" + ID + ".csv")
+                path = os.path.join(new_cols_directory, "basin_" + ID + ".csv")
                 temp_frame = pd.read_csv(path)
                 temp_frame["Date"] = pd.to_datetime(temp_frame["Date"])
                 temp_frame = temp_frame.set_index("Date")
@@ -93,7 +93,7 @@ def replace_column_in_directory(directory, col_to_replace, new_cols_directory):
                 # Write the joined frame to the output folder
                 output_path = os.path.join(directory, file)
                 frame = frame.dropna()
-                frame = frame.rename(columns={'Daily Average LST [C]' : 'average temperature (C)'})
+                frame = frame.rename(columns={'Daily Average LST [C]' : 'average temperature (C)', })
                 frame = frame.reset_index()
                 frame.to_csv(output_path, index=False)
             except Exception as e:
@@ -101,11 +101,16 @@ def replace_column_in_directory(directory, col_to_replace, new_cols_directory):
         loop.update(1)
 
 def main(directories_to_join, dest_dir):
-    # rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
-    # rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
+    rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
+    rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
 
-    # replace_column_in_directory("../FilledFinalSeries", "ET [kg/m^2/day]", "../ET_TS")
-    replace_column_in_directory("../FilledFinalSeries", "PET [kg/m^2/day]", "../PET_TS")
+    rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
+    rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
+
+
+
+    # replace_column_in_directory("../GAGES_TS", "ET [kg/m^2/day]", "../ET_TS")
+    # replace_column_in_directory("../GAGES_TS", "PET [kg/m^2/day]", "../PET_TS")
 
 
     # directories_to_join = directories_to_join
