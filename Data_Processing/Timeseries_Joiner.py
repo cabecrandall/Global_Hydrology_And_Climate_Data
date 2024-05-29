@@ -101,16 +101,16 @@ def replace_column_in_directory(directory, col_to_replace, new_cols_directory):
         loop.update(1)
 
 def main(directories_to_join, dest_dir):
-    rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
-    rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
+    # rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
+    # rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
 
-    rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
-    rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
+    # rename_columns_in_directory("../ET_TS", "Unnamed: 0", "Date", "../ET_TS")
+    # rename_columns_in_directory("../PET_TS", "Unnamed: 0", "Date", "../PET_TS")
 
 
 
     # replace_column_in_directory("../GAGES_TS", "ET [kg/m^2/day]", "../ET_TS")
-    # replace_column_in_directory("../GAGES_TS", "PET [kg/m^2/day]", "../PET_TS")
+    replace_column_in_directory("../GAGES_TS", "PET [kg/m^2/day]", "../PET_TS")
 
 
     # directories_to_join = directories_to_join
