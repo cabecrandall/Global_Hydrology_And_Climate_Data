@@ -155,7 +155,7 @@ def convert(directory, metadata_path, metadata_id_column, metadata_area_column):
 
 if __name__ == '__main__':
     # Unit_Conversion_Verifier("../FilledFinalSeriesLitersPerDayPerSqKm")
-    convert("../GAGES_TS", "../metadata.csv", "STAID", "DRAIN_SQKM")
+    convert("../GAGES_TS", "../../hydrology/metadata.csv", "STAID", "DRAIN_SQKM")
     exit()
 
 

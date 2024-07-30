@@ -1,16 +1,14 @@
-import pandas as pd
 # import indexcatchments
 # import catchmentcharts
 # import matchcatchments as matcher
-from Data_Processing import Series_Filter, Timeseries_Joiner
-from Data_Processing import Final_Series_Converter
+from WildfireAndWater.Data_Processing import Timeseries_Joiner, Final_Series_Converter, Flow_Series_Maker
+
 
 # quick class instance setup
 # i = indexcatchments.indexcatchments()
 # chart = catchmentcharts.charts
 
 def makeFlowSeries():
-    from Data_Processing import Flow_Series_Maker
     Flow_Series_Maker.main()
 
 def main(make_flow_series=False, generate_charts=False, flowdir=None, tempdir=None, precipdir=None, ETdir=None, PETdir=None, dest_dir=None, filter_final=False):
